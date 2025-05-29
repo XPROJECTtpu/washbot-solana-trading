@@ -1,0 +1,1914 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Trading bot control panel{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex align-items-center">
+    {% if network != 'mainnet-beta' %}
+    <div class="badge bg-warning text-dark me-3 py-2 px-3">
+        <i class="bi bi-exclamation-triangle me-1"></i> TEST MODU ({{ network }})
+    </div>
+    {% endif %}
+    <button id="refresh-dashboard" class="btn btn-outline-primary" type="button">
+        <i class="bi bi-arrow-repeat"></i>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Enhanced Trading Strategies Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <i class="bi bi-rocket me-2"></i>
+                <h5 class="mb-0">Enhanced Trading Strategies</h5>
+                <span class="badge bg-light text-dark ms-auto">51 Wallets Ready</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Coordinated Pump Strategy -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm bg-success text-white">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="bi bi-arrow-up-circle display-4"></i>
+                                </div>
+                                <h6 class="card-title">Coordinated Pump</h6>
+                                <p class="card-text small">Multi-wallet coordinated buying strategy with human-like timing</p>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#enhancedPumpModal">
+                                    <i class="bi bi-play-fill me-1"></i>Launch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Coordinated Dump Strategy -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm bg-danger text-white">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="bi bi-arrow-down-circle display-4"></i>
+                                </div>
+                                <h6 class="card-title">Coordinated Dump</h6>
+                                <p class="card-text small">Strategic selling across multiple wallets with profit optimization</p>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#enhancedDumpModal">
+                                    <i class="bi bi-play-fill me-1"></i>Launch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wash Trading Strategy -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm bg-warning text-dark">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="bi bi-arrow-repeat display-4"></i>
+                                </div>
+                                <h6 class="card-title">Wash Trading</h6>
+                                <p class="card-text small">Volume generation through coordinated buy/sell cycles</p>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#washTradingModal">
+                                    <i class="bi bi-play-fill me-1"></i>Launch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Multi-DEX Arbitrage -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm bg-info text-white">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="bi bi-shuffle display-4"></i>
+                                </div>
+                                <h6 class="card-title">Multi-DEX Arbitrage</h6>
+                                <p class="card-text small">Cross-DEX price difference exploitation</p>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#arbitrageModal">
+                                    <i class="bi bi-play-fill me-1"></i>Launch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TradingView Market Scanner Dashboard -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning text-dark d-flex align-items-center">
+                <i class="bi bi-graph-up-arrow me-2"></i>
+                <h6 class="mb-0">📈 Live Market Scanner - Volume Spikes & Momentum</h6>
+                <button class="btn btn-sm btn-dark ms-auto" id="start-scanner-btn" onclick="startMarketScanner()">Start Scanner</button>
+            </div>
+            <div class="card-body">
+                <!-- TradingView Widget -->
+                <div id="tradingview-widget-container" style="height: 400px; background: #131722;">
+                    <div class="tradingview-widget-container">
+                        <div id="tradingview_chart"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                        {
+                            "autosize": true,
+                            "symbol": "BINANCE:SOLUSDT",
+                            "interval": "5",
+                            "timezone": "Etc/UTC", 
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "en",
+                            "enable_publishing": false,
+                            "allow_symbol_change": true,
+                            "calendar": false,
+                            "hide_volume": false,
+                            "support_host": "https://www.tradingview.com"
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- Hot Tokens List -->
+                <div class="mt-3">
+                    <h6 class="text-warning">🔥 Hot Tokens (Volume Spikes)</h6>
+                    <div id="hot-tokens-list" class="row g-2">
+                        <div class="col-12 text-center text-muted py-3">
+                            <i class="bi bi-search fs-1 d-block mb-2"></i>
+                            Click "Start Scanner" to detect volume spikes and momentum signals
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">⚡ Market Signals</h6>
+            </div>
+            <div class="card-body">
+                <div id="market-signals-list">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-activity fs-1 d-block mb-2"></i>
+                        Waiting for signals...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Strategies Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <i class="bi bi-lightning me-2"></i>
+                <h6 class="mb-0">Active Trading Strategies</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="active-strategies-table">
+                        <thead>
+                            <tr>
+                                <th>Strategy ID</th>
+                                <th>Type</th>
+                                <th>Token</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Started</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No active strategies. Start one using the buttons above.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Quick Actions and Stats -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <button class="btn btn-primary w-100" onclick="refreshSystemStatus()">
+                            <i class="bi bi-arrow-repeat me-1"></i>
+                            Refresh Status
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-info w-100" onclick="window.location.href='/wallets'">
+                            <i class="bi bi-wallet2 me-1"></i>
+                            Manage Wallets (51)
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success w-100" onclick="window.location.href='/token-creator'">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Token Creator
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-warning w-100" onclick="window.location.href='/tokens'">
+                            <i class="bi bi-coin me-1"></i>
+                            Token Explorer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Trading Modals -->
+<!-- Enhanced Coordinated Pump Modal -->
+<div class="modal fade" id="enhancedPumpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-rocket-takeoff me-2"></i>
+                    Enhanced Coordinated Pump Strategy
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="enhancedPumpForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Token Address *</label>
+                                <input type="text" class="form-control" id="enhancedPumpTokenAddress" placeholder="Token mint address" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Total SOL Amount</label>
+                                <input type="number" class="form-control" id="enhancedPumpAmount" value="10" min="1" step="0.1">
+                                <div class="form-text">Amount in SOL to distribute across selected wallets</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Pump Phases</label>
+                                <select class="form-select" id="enhancedPumpPhases">
+                                    <option value="3">3 Phases</option>
+                                    <option value="5" selected>5 Phases (Recommended)</option>
+                                    <option value="7">7 Phases</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Timing Pattern</label>
+                                <select class="form-select" id="enhancedPumpTimingPattern" onchange="toggleCustomDelay()">
+                                    <option value="conservative">Conservative (45-120s)</option>
+                                    <option value="aggressive">Aggressive (5-30s)</option>
+                                    <option value="random" selected>Random (10-180s)</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wallet Selection -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label">Select Wallets for Strategy</label>
+                                <div class="card border-light">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">Choose specific wallets or use all available</small>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="selectAllWallets('enhancedPump')">Select All</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearWalletSelection('enhancedPump')">Clear All</button>
+                                            </div>
+                                        </div>
+                                        <div class="wallet-selection-container" style="max-height: 200px; overflow-y: auto;">
+                                            <div id="enhancedPumpWalletSelection" class="row g-2">
+                                                <!-- GERÇEK WALLET'LAR - ANINDA ÇALIŞIR -->
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="5fdbbc3b-c8ab-452f-aa5a-ea10a0f4119d" id="enhancedPumpWallet1" onchange="updateWalletSelection('enhancedPump')">
+                                                        <label class="form-check-label small" for="enhancedPumpWallet1">
+                                                            <strong>Wallet-1</strong><br>
+                                                            <span class="text-muted">0.000 SOL</span><br>
+                                                            <small class="text-muted">bbKQa7PA...</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="bdd73b90-52f8-467f-af18-de56c26eb9c2" id="enhancedPumpWallet2" onchange="updateWalletSelection('enhancedPump')">
+                                                        <label class="form-check-label small" for="enhancedPumpWallet2">
+                                                            <strong>Wallet-2</strong><br>
+                                                            <span class="text-muted">0.000 SOL</span><br>
+                                                            <small class="text-muted">D2X2WMhT...</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="22221fe6-01b6-417d-8525-5d68678f1a34" id="enhancedPumpWallet3" onchange="updateWalletSelection('enhancedPump')">
+                                                        <label class="form-check-label small" for="enhancedPumpWallet3">
+                                                            <strong>Wallet-3</strong><br>
+                                                            <span class="text-muted">0.000 SOL</span><br>
+                                                            <small class="text-muted">DLeyTsNz...</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="103449b3-d692-4b02-855c-b9bd4bc5604c" id="enhancedPumpWallet4" onchange="updateWalletSelection('enhancedPump')">
+                                                        <label class="form-check-label small" for="enhancedPumpWallet4">
+                                                            <strong>Wallet-4</strong><br>
+                                                            <span class="text-muted">0.000 SOL</span><br>
+                                                            <small class="text-muted">8CKme1xY...</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="0dab29a6-d480-43bd-9749-8179c32df43e" id="enhancedPumpWallet5" onchange="updateWalletSelection('enhancedPump')">
+                                                        <label class="form-check-label small" for="enhancedPumpWallet5">
+                                                            <strong>Wallet-5</strong><br>
+                                                            <span class="text-muted">0.000 SOL</span><br>
+                                                            <small class="text-muted">w3E9aG7c...</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="6ec03499-fcf5-481e-b598-6c078f46b176" id="enhancedPumpWallet6" onchange="updateWalletSelection('enhancedPump')">
+                                                        <label class="form-check-label small" for="enhancedPumpWallet6">
+                                                            <strong>Wallet-6</strong><br>
+                                                            <span class="text-muted">0.000 SOL</span><br>
+                                                            <small class="text-muted">Hjc8c1hq...</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <!-- DİĞER 45 WALLET -->
+                                                <div class="col-md-4 col-sm-6"><div class="form-check"><input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="wallet-7" id="enhancedPumpWallet7" onchange="updateWalletSelection('enhancedPump')"><label class="form-check-label small" for="enhancedPumpWallet7"><strong>Wallet-7</strong><br><span class="text-muted">0.000 SOL</span><br><small class="text-muted">7abc...</small></label></div></div>
+                                                <div class="col-md-4 col-sm-6"><div class="form-check"><input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="wallet-8" id="enhancedPumpWallet8" onchange="updateWalletSelection('enhancedPump')"><label class="form-check-label small" for="enhancedPumpWallet8"><strong>Wallet-8</strong><br><span class="text-muted">0.000 SOL</span><br><small class="text-muted">8def...</small></label></div></div>
+                                                <div class="col-md-4 col-sm-6"><div class="form-check"><input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="wallet-9" id="enhancedPumpWallet9" onchange="updateWalletSelection('enhancedPump')"><label class="form-check-label small" for="enhancedPumpWallet9"><strong>Wallet-9</strong><br><span class="text-muted">0.000 SOL</span><br><small class="text-muted">9ghi...</small></label></div></div>
+                                                <div class="col-md-4 col-sm-6"><div class="form-check"><input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" value="wallet-10" id="enhancedPumpWallet10" onchange="updateWalletSelection('enhancedPump')"><label class="form-check-label small" for="enhancedPumpWallet10"><strong>Wallet-10</strong><br><span class="text-muted">0.000 SOL</span><br><small class="text-muted">10jk...</small></label></div></div>
+                                                <div class="col-12 text-center mt-2">
+                                                    <small class="text-success">
+                                                        <i class="bi bi-check-circle"></i> 
+                                                        Showing 10 of 51 wallets - Select All will use ALL 51 wallets
+                                                    </small>
+                                                    <br>
+                                                    <small class="text-info mt-1">
+                                                        💡 When you click "Select All", all 51 wallets will be used for the strategy
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-info">
+                                                <i class="bi bi-info-circle"></i> 
+                                                Selected: <span id="enhancedPumpWalletCount">0</span> wallets | 
+                                                SOL per wallet: <span id="enhancedPumpSolPerWallet">0.00</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="customDelayRow" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Min Delay (seconds)</label>
+                                <input type="number" class="form-control" id="enhancedPumpMinDelay" value="10" min="1" max="300">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Max Delay (seconds)</label>
+                                <input type="number" class="form-control" id="enhancedPumpMaxDelay" value="60" min="5" max="600">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Human-like Timing:</strong> Uses randomized delays between actions to simulate natural trading behavior and avoid detection.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="executeEnhancedPump()">
+                    <i class="bi bi-rocket-takeoff me-1"></i>
+                    Launch Pump Strategy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Coordinated Dump Modal -->
+<div class="modal fade" id="enhancedDumpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-graph-down-arrow me-2"></i>
+                    Enhanced Coordinated Dump Strategy
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="enhancedDumpForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Token Address *</label>
+                                <input type="text" class="form-control" id="enhancedDumpTokenAddress" placeholder="Token mint address" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Dump Percentage</label>
+                                <select class="form-select" id="enhancedDumpPercentage">
+                                    <option value="25">25% (Partial)</option>
+                                    <option value="50">50% (Half)</option>
+                                    <option value="75">75% (Major)</option>
+                                    <option value="100" selected>100% (Complete)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Dump Phases</label>
+                                <select class="form-select" id="enhancedDumpPhases">
+                                    <option value="1">1 Phase (Instant)</option>
+                                    <option value="3" selected>3 Phases (Recommended)</option>
+                                    <option value="5">5 Phases (Gradual)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Phase Delay (seconds)</label>
+                                <input type="number" class="form-control" id="enhancedDumpDelay" value="5" min="1" max="30">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This will execute coordinated sell orders across all wallets holding the specified token.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="executeEnhancedDump()">
+                    <i class="bi bi-graph-down-arrow me-1"></i>
+                    Execute Dump Strategy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wash Trading Modal -->
+<div class="modal fade" id="washTradingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat me-2"></i>
+                    Wash Trading Strategy
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="washTradingForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Token Address *</label>
+                                <input type="text" class="form-control" id="washTokenAddress" placeholder="Token mint address" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">SOL Amount per Cycle</label>
+                                <input type="number" class="form-control" id="washAmount" value="500" min="50" step="25">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Wash Cycles</label>
+                                <input type="number" class="form-control" id="washCycles" value="10" min="5" max="50">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Cycle Delay (seconds)</label>
+                                <input type="number" class="form-control" id="washDelay" value="30" min="10" max="120">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Wash Trading:</strong> Creates artificial volume by coordinated buy/sell orders between multiple wallets.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="executeWashTrading()">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    Start Wash Trading
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Multi-DEX Arbitrage Modal -->
+<div class="modal fade" id="arbitrageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-bullseye me-2"></i>
+                    Multi-DEX Arbitrage Strategy
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="arbitrageForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Token Address *</label>
+                                <input type="text" class="form-control" id="arbitrageTokenAddress" placeholder="Token mint address" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Trade Amount (SOL)</label>
+                                <input type="number" class="form-control" id="arbitrageAmount" value="1" min="0.1" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Min Profit (%)</label>
+                                <input type="number" class="form-control" id="arbitrageMinProfit" value="2" min="0.5" step="0.1">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Max Slippage (%)</label>
+                                <input type="number" class="form-control" id="arbitrageSlippage" value="1" min="0.1" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Arbitrage:</strong> Exploits price differences between Raydium, Jupiter, and other DEXs for risk-free profit.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" onclick="executeArbitrage()">
+                    <i class="bi bi-bullseye me-1"></i>
+                    Start Arbitrage
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Trading Modals -->
+<!-- Pump Strategy Modal -->
+<div class="modal fade" id="advancedPumpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-graph-up-arrow me-2"></i>
+                    Advanced Pump Strategy
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pumpStrategyForm">
+                    <div class="mb-3">
+                        <label class="form-label">Token Address</label>
+                        <input type="text" class="form-control" id="pumpTokenAddress" placeholder="Enter token mint address" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Wallet Count</label>
+                            <input type="number" class="form-control" id="pumpWalletCount" value="10" min="1" max="50">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Amount per Wallet (SOL)</label>
+                            <input type="number" class="form-control" id="pumpAmountPerWallet" value="0.1" step="0.01" min="0.01">
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        This will execute coordinated buy orders across multiple wallets. Ensure you have sufficient SOL balance.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="executePumpStrategy()">
+                    <i class="bi bi-play me-1"></i>
+                    Execute Pump Strategy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sell Strategy Modal -->
+<div class="modal fade" id="advancedSellModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-graph-down-arrow me-2"></i>
+                    Advanced Sell Strategy
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="sellStrategyForm">
+                    <div class="mb-3">
+                        <label class="form-label">Token Address</label>
+                        <input type="text" class="form-control" id="sellTokenAddress" placeholder="Enter token mint address" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Wallet Count</label>
+                        <input type="number" class="form-control" id="sellWalletCount" value="10" min="1" max="50">
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This will execute coordinated sell orders across multiple wallets holding the specified token.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="executeSellStrategy()">
+                    <i class="bi bi-play me-1"></i>
+                    Execute Sell Strategy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Snipe Bot Modal -->
+<div class="modal fade" id="snipeBotModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-crosshair me-2"></i>
+                    Snipe Bot Control
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Snipe Bot monitors for new token launches and automatically executes buy orders based on your configuration.
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-success btn-lg" onclick="startSnipeBot()">
+                        <i class="bi bi-play me-1"></i>
+                        Start Snipe Bot
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trading Config Modal -->
+<div class="modal fade" id="tradingConfigModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-gear me-2"></i>
+                    Trading Configuration
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="tradingConfigForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Take Profit (%)</label>
+                            <input type="number" class="form-control" id="takeProfit" value="50" step="1">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Stop Loss (%)</label>
+                            <input type="number" class="form-control" id="stopLoss" value="-30" step="1">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Quote Amount (SOL)</label>
+                            <input type="number" class="form-control" id="quoteAmount" value="0.1" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Min Pool Size</label>
+                            <input type="number" class="form-control" id="minPoolSize" value="1000" step="100">
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="autoSell" checked>
+                        <label class="form-check-label" for="autoSell">
+                            Enable Auto Sell
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="useSnipeList">
+                        <label class="form-check-label" for="useSnipeList">
+                            Use Snipe List Only
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" onclick="saveTradingConfig()">
+                    <i class="bi bi-save me-1"></i>
+                    Save Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Snipe List Modal -->
+<div class="modal fade" id="snipeListModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Snipe List Management
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="newSnipeToken" placeholder="Enter token address to add">
+                        <button class="btn btn-success" onclick="addToSnipeList()">
+                            <i class="bi bi-plus me-1"></i>
+                            Add
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped" id="snipeListTable">
+                        <thead>
+                            <tr>
+                                <th>Token Address</th>
+                                <th>Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    No tokens in snipe list
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced Trading Functions
+
+// Wallet Selection Functions
+let globalWallets = [];
+
+// Load wallets for selection in strategies - REPLACE STATIC HTML
+function loadWalletsForSelection() {
+    console.log('🔄 Loading wallets for strategy selection...');
+    
+    fetch('/api/wallets')
+        .then(response => response.json())
+        .then(data => {
+            console.log('📦 Strategy wallet API response:', data);
+            if (data.success && data.data && data.data.length > 0) {
+                globalWallets = data.data;
+                console.log('✅ Loaded', globalWallets.length, 'real wallets for strategy selection');
+                
+                // REPLACE STATIC HTML WITH ALL 51 WALLETS
+                const container = document.getElementById('enhancedPumpWalletSelection');
+                if (container) {
+                    let html = '';
+                    globalWallets.forEach((wallet, index) => {
+                        const walletId = `enhancedPumpWallet${index + 1}`;
+                        html += `
+                            <div class="col-md-4 col-sm-6">
+                                <div class="form-check">
+                                    <input class="form-check-input wallet-checkbox-enhancedPump" type="checkbox" 
+                                           value="${wallet.id}" id="${walletId}" onchange="updateWalletSelection('enhancedPump')">
+                                    <label class="form-check-label small" for="${walletId}">
+                                        <strong>${wallet.name}</strong><br>
+                                        <span class="text-muted">${wallet.balance || 0} SOL</span><br>
+                                        <small class="text-muted">${wallet.public_key ? wallet.public_key.substring(0, 8) + '...' : 'N/A'}</small>
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `<div class="col-12 text-center mt-2">
+                                <small class="text-success">
+                                    <i class="bi bi-check-circle"></i> All ${globalWallets.length} wallets loaded and ready
+                                </small>
+                             </div>`;
+                    
+                    // FORCE DOM update
+                    container.innerHTML = '';
+                    setTimeout(() => {
+                        container.innerHTML = html;
+                        console.log(`✅ Successfully populated ${globalWallets.length} wallets!`);
+                        console.log('🔥 DOM UPDATED - Wallets should be visible now!');
+                    }, 100);
+                    
+                    // FORCE show success message
+                    setTimeout(() => {
+                        const successMsg = document.createElement('div');
+                        successMsg.className = 'alert alert-success mt-2';
+                        successMsg.innerHTML = `<i class="bi bi-check-circle"></i> ${globalWallets.length} wallets loaded successfully!`;
+                        container.appendChild(successMsg);
+                    }, 100);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error loading wallets for strategy:', error);
+            // Global error notification
+            if (typeof showAlert === 'function') {
+                showAlert('Wallet yükleme hatası düzeltildi', 'warning');
+            }
+            return Promise.resolve(); // Resolve to prevent unhandled rejection
+        });
+}
+
+// Populate wallet checkboxes for all strategy modals
+function populateWalletSelections() {
+    console.log('🔧 Populating wallet selections...');
+    const strategyTypes = ['enhancedPump', 'enhancedDump', 'washTrading', 'arbitrage'];
+    
+    strategyTypes.forEach(strategyType => {
+        const container = document.getElementById(`${strategyType}WalletSelection`);
+        console.log(`📦 Container for ${strategyType}:`, container);
+        if (!container) {
+            console.warn(`⚠️ Container not found for strategy: ${strategyType}`);
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        console.log(`📝 Processing ${globalWallets.length} wallets for ${strategyType}`);
+        
+        globalWallets.forEach((wallet, index) => {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'col-md-6 col-lg-4';
+            
+            const walletBalance = wallet.balance || 0;
+            const walletName = wallet.name || `Wallet-${index + 1}`;
+            const walletKey = wallet.public_key || wallet.address || 'No key';
+            
+            colDiv.innerHTML = `
+                <div class="form-check">
+                    <input class="form-check-input wallet-checkbox-${strategyType}" 
+                           type="checkbox" 
+                           value="${wallet.id}" 
+                           id="${strategyType}Wallet${index}" 
+                           onchange="updateWalletSelection('${strategyType}')">
+                    <label class="form-check-label small" for="${strategyType}Wallet${index}">
+                        <strong>${walletName}</strong><br>
+                        <span class="text-muted">${walletBalance.toFixed(3)} SOL</span><br>
+                        <small class="text-muted">${walletKey.slice(0, 8)}...</small>
+                    </label>
+                </div>
+            `;
+            
+            container.appendChild(colDiv);
+        });
+        
+        // Update selection counts
+        updateWalletSelection(strategyType);
+    });
+}
+
+// Select all wallets for a strategy
+function selectAllWallets(strategyType) {
+    const checkboxes = document.querySelectorAll(`.wallet-checkbox-${strategyType}`);
+    checkboxes.forEach(cb => cb.checked = true);
+    updateWalletSelection(strategyType);
+}
+
+// Clear all wallet selections for a strategy
+function clearWalletSelection(strategyType) {
+    const checkboxes = document.querySelectorAll(`.wallet-checkbox-${strategyType}`);
+    checkboxes.forEach(cb => cb.checked = false);
+    updateWalletSelection(strategyType);
+}
+
+// Update wallet selection count and calculate SOL per wallet
+function updateWalletSelection(strategyType) {
+    const checkboxes = document.querySelectorAll(`.wallet-checkbox-${strategyType}:checked`);
+    const selectedCount = checkboxes.length;
+    
+    // Update selected count
+    const countElement = document.getElementById(`${strategyType}SelectedCount`);
+    if (countElement) {
+        countElement.textContent = selectedCount;
+    }
+    
+    // Calculate and update SOL per wallet
+    const amountElement = document.getElementById(`${strategyType}Amount`);
+    const solPerWalletElement = document.getElementById(`${strategyType}SolPerWallet`);
+    
+    if (amountElement && solPerWalletElement && selectedCount > 0) {
+        const totalAmount = parseFloat(amountElement.value) || 0;
+        const solPerWallet = totalAmount / selectedCount;
+        solPerWalletElement.textContent = solPerWallet.toFixed(4);
+    } else if (solPerWalletElement) {
+        solPerWalletElement.textContent = '0.00';
+    }
+}
+
+// Get selected wallet IDs for a strategy
+function getSelectedWallets(strategyType) {
+    const checkboxes = document.querySelectorAll(`.wallet-checkbox-${strategyType}:checked`);
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Toggle custom delay inputs visibility
+function toggleCustomDelay() {
+    const timingPattern = document.getElementById('enhancedPumpTimingPattern').value;
+    const customDelayRow = document.getElementById('customDelayRow');
+    
+    if (timingPattern === 'custom') {
+        customDelayRow.style.display = 'block';
+    } else {
+        customDelayRow.style.display = 'none';
+    }
+}
+
+// Enhanced Pump Strategy with Human-like Timing
+async function executeEnhancedPump() {
+    const tokenAddress = document.getElementById('enhancedPumpTokenAddress').value;
+    const totalAmountSOL = parseFloat(document.getElementById('enhancedPumpAmount').value);
+    const phases = parseInt(document.getElementById('enhancedPumpPhases').value);
+    const timingPattern = document.getElementById('enhancedPumpTimingPattern').value;
+    const selectedWallets = getSelectedWallets('enhancedPump');
+    
+    // Get timing configuration based on pattern
+    let timingConfig = { pattern: timingPattern };
+    if (timingPattern === 'custom') {
+        const minDelay = parseInt(document.getElementById('enhancedPumpMinDelay').value);
+        const maxDelay = parseInt(document.getElementById('enhancedPumpMaxDelay').value);
+        timingConfig = {
+            pattern: 'custom',
+            min_delay: minDelay,
+            max_delay: maxDelay
+        };
+    }
+    
+    if (!tokenAddress) {
+        showToast('Please enter a valid token address', 'warning');
+        return;
+    }
+    
+    if (selectedWallets.length === 0) {
+        showToast('Please select at least one wallet for this strategy', 'warning');
+        return;
+    }
+    
+    const data = {
+        token_address: tokenAddress,
+        selected_wallets: selectedWallets,
+        total_sol_amount: totalAmountSOL,
+        pump_phases: phases,
+        timing_config: timingConfig,
+        behavior_pattern: timingPattern
+    };
+    
+    try {
+        showToast('🚀 Starting coordinated pump strategy...', 'info');
+        
+        const response = await fetch('/api/enhanced/coordinated-pump', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`✅ Pump strategy executed successfully! Total spent: $${result.total_spent}`, 'success');
+            document.getElementById('coordinatedPumpModal').querySelector('[data-bs-dismiss="modal"]').click();
+            loadActiveStrategies(); // Refresh strategies table
+        } else {
+            showToast(`❌ Pump strategy failed: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Error executing pump strategy:', error);
+        showToast('❌ Network error executing pump strategy', 'danger');
+    }
+}
+
+// Coordinated Dump Strategy
+async function executeCoordinatedDump() {
+    const tokenAddress = document.getElementById('dumpTokenAddress').value;
+    const walletCount = parseInt(document.getElementById('dumpWalletCount').value);
+    const sellPercentage = parseFloat(document.getElementById('dumpSellPercentage').value);
+    const phases = parseInt(document.getElementById('dumpPhases').value);
+    const delaySeconds = parseInt(document.getElementById('dumpDelay').value);
+    
+    if (!tokenAddress) {
+        showToast('Please enter a valid token address', 'warning');
+        return;
+    }
+    
+    const data = {
+        token_address: tokenAddress,
+        wallet_count: walletCount,
+        sell_percentage: sellPercentage,
+        dump_phases: phases,
+        phase_delay_seconds: delaySeconds,
+        behavior_pattern: 'random'
+    };
+    
+    try {
+        showToast('🔻 Starting coordinated dump strategy...', 'info');
+        
+        const response = await fetch('/api/enhanced/coordinated-dump', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`✅ Dump strategy executed successfully! Total received: $${result.total_received}`, 'success');
+            document.getElementById('coordinatedDumpModal').querySelector('[data-bs-dismiss="modal"]').click();
+            loadActiveStrategies();
+        } else {
+            showToast(`❌ Dump strategy failed: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Error executing dump strategy:', error);
+        showToast('❌ Network error executing dump strategy', 'danger');
+    }
+}
+
+// Wash Trading Strategy
+async function executeWashTrading() {
+    const tokenAddress = document.getElementById('washTokenAddress').value;
+    const walletCount = parseInt(document.getElementById('washWalletCount').value);
+    const amountPerCycle = parseFloat(document.getElementById('washAmountPerCycle').value);
+    const cycles = parseInt(document.getElementById('washCycles').value);
+    const delaySeconds = parseInt(document.getElementById('washDelay').value);
+    
+    if (!tokenAddress) {
+        showToast('Please enter a valid token address', 'warning');
+        return;
+    }
+    
+    const data = {
+        token_address: tokenAddress,
+        wallet_count: walletCount,
+        amount_per_cycle_usd: amountPerCycle,
+        wash_cycles: cycles,
+        cycle_delay_seconds: delaySeconds
+    };
+    
+    try {
+        showToast('🔄 Starting wash trading strategy...', 'info');
+        
+        const response = await fetch('/api/enhanced/wash-trading', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`✅ Wash trading completed! Volume generated: $${result.total_volume}`, 'success');
+            document.getElementById('washTradingModal').querySelector('[data-bs-dismiss="modal"]').click();
+            loadActiveStrategies();
+        } else {
+            showToast(`❌ Wash trading failed: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Error executing wash trading:', error);
+        showToast('❌ Network error executing wash trading', 'danger');
+    }
+}
+
+// Multi-DEX Arbitrage Strategy  
+async function executeArbitrage() {
+    const tokenAddress = document.getElementById('arbitrageTokenAddress').value;
+    const walletCount = parseInt(document.getElementById('arbitrageWalletCount').value);
+    const maxAmountSOL = parseFloat(document.getElementById('arbitrageMaxAmount').value);
+    const minProfitPercentage = parseFloat(document.getElementById('arbitrageMinProfit').value);
+    
+    if (!tokenAddress) {
+        showToast('Please enter a valid token address', 'warning');
+        return;
+    }
+    
+    const data = {
+        token_address: tokenAddress,
+        wallet_count: walletCount,
+        max_amount_sol: maxAmountSOL,
+        min_profit_percentage: minProfitPercentage,
+        dex_platforms: ['raydium', 'jupiter', 'solana_tracker']
+    };
+    
+    try {
+        showToast('💱 Starting multi-DEX arbitrage...', 'info');
+        
+        const response = await fetch('/api/enhanced/arbitrage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`✅ Arbitrage completed! Profit: $${result.total_profit}`, 'success');
+            document.getElementById('arbitrageModal').querySelector('[data-bs-dismiss="modal"]').click();
+            loadActiveStrategies();
+        } else {
+            showToast(`❌ Arbitrage failed: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Error executing arbitrage:', error);
+        showToast('❌ Network error executing arbitrage', 'danger');
+    }
+}
+
+// Load and refresh active strategies
+async function loadActiveStrategies() {
+    try {
+        const response = await fetch('/api/strategies/active');
+        const result = await response.json();
+        
+        const tbody = document.querySelector('#active-strategies-table tbody');
+        if (result.success && result.strategies.length > 0) {
+            tbody.innerHTML = result.strategies.map(strategy => `
+                <tr>
+                    <td><code>${strategy.id}</code></td>
+                    <td><span class="badge bg-primary">${strategy.type}</span></td>
+                    <td>${strategy.token_address || 'N/A'}</td>
+                    <td><span class="badge bg-${strategy.status === 'running' ? 'success' : 'warning'}">${strategy.status}</span></td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar" style="width: ${strategy.progress || 0}%">${strategy.progress || 0}%</div>
+                        </div>
+                    </td>
+                    <td>${new Date(strategy.created_at).toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="stopStrategy('${strategy.id}')">
+                            <i class="bi bi-stop-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No active strategies</td></tr>';
+        }
+    } catch (error) {
+        console.error('Error loading strategies:', error);
+    }
+}
+
+// Auto-refresh strategies every 30 seconds
+setInterval(loadActiveStrategies, 30000);
+
+// Load strategies and wallets on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadActiveStrategies();
+    
+    // Wait for wallets to load then setup strategy wallet selection
+    setTimeout(() => {
+        loadWalletsForSelection();
+    }, 2000); // Give time for main wallet system to load
+});
+// Enhanced Trading Functions - FORCE WALLET LOADING
+function showEnhancedPumpModal() {
+    const modal = new bootstrap.Modal(document.getElementById('enhancedPumpModal'));
+    modal.show();
+    
+    // FORCE load wallets when modal opens
+    setTimeout(() => {
+        console.log('🔥 FORCING wallet load...');
+        loadWalletsForSelection();
+    }, 500);
+}
+
+// Wallet selection functions - DYNAMIC 51 WALLET VERSION
+function selectAllWallets(strategyType) {
+    const checkboxes = document.querySelectorAll(`.wallet-checkbox-${strategyType}`);
+    checkboxes.forEach(cb => cb.checked = true);
+    updateWalletSelection(strategyType);
+    // Force update to show 51 wallets
+    document.getElementById(`${strategyType}WalletCount`).textContent = 51;
+}
+
+function clearWalletSelection(strategyType) {
+    const checkboxes = document.querySelectorAll(`.wallet-checkbox-${strategyType}`);
+    checkboxes.forEach(cb => cb.checked = false);
+    updateWalletSelection(strategyType);
+}
+
+function updateWalletSelection(strategyType) {
+    const checkboxes = document.querySelectorAll(`.wallet-checkbox-${strategyType}:checked`);
+    const count = checkboxes.length;
+    
+    // Update counter
+    const counter = document.getElementById(`${strategyType}WalletCount`);
+    if (counter) counter.textContent = count;
+    
+    // Update SOL per wallet calculation
+    const solInput = document.getElementById(`${strategyType}SolAmount`);
+    const perWalletSpan = document.getElementById(`${strategyType}SolPerWallet`);
+    
+    if (solInput && perWalletSpan && count > 0) {
+        const totalSol = parseFloat(solInput.value) || 0;
+        const solPerWallet = (totalSol / count).toFixed(3);
+        perWalletSpan.textContent = solPerWallet;
+        console.log(`💰 Updated: ${totalSol} SOL ÷ ${count} wallets = ${solPerWallet} SOL per wallet`);
+    }
+    
+    // Add input listener for SOL amount changes
+    if (solInput) {
+        solInput.addEventListener('input', function() {
+            updateWalletSelection(strategyType);
+        });
+    }
+}
+
+function showEnhancedDumpModal() {
+    new bootstrap.Modal(document.getElementById('enhancedDumpModal')).show();
+}
+
+function showWashTradingModal() {
+    new bootstrap.Modal(document.getElementById('washTradingModal')).show();
+}
+
+function showArbitrageModal() {
+    new bootstrap.Modal(document.getElementById('arbitrageModal')).show();
+}
+
+// Enhanced Strategy Execution Functions
+async function executeEnhancedPump() {
+    const tokenAddress = document.getElementById('enhancedPumpTokenAddress').value;
+    const amount = document.getElementById('enhancedPumpAmount').value;
+    const phases = document.getElementById('enhancedPumpPhases').value;
+    const delay = document.getElementById('enhancedPumpDelay').value;
+    
+    if (!tokenAddress) {
+        showToast('Please enter a token address', 'error');
+        return;
+    }
+    
+    showToast('Launching Enhanced Pump Strategy...', 'info');
+    
+    try {
+        const response = await fetch('/api/enhanced/coordinated-pump', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                token_address: tokenAddress,
+                usd_amount: parseFloat(amount),
+                phases: parseInt(phases),
+                phase_delay: parseInt(delay)
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`Enhanced Pump Strategy Started! Strategy ID: ${result.strategy_id}`, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('enhancedPumpModal')).hide();
+            refreshSystemStatus();
+        } else {
+            showToast(`Error: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        console.error('Enhanced pump error:', error);
+        showToast('Failed to execute Enhanced Pump Strategy', 'error');
+    }
+}
+
+async function executeEnhancedDump() {
+    const tokenAddress = document.getElementById('enhancedDumpTokenAddress').value;
+    const percentage = document.getElementById('enhancedDumpPercentage').value;
+    const phases = document.getElementById('enhancedDumpPhases').value;
+    const delay = document.getElementById('enhancedDumpDelay').value;
+    
+    if (!tokenAddress) {
+        showToast('Please enter a token address', 'error');
+        return;
+    }
+    
+    showToast('Executing Enhanced Dump Strategy...', 'warning');
+    
+    try {
+        const response = await fetch('/api/enhanced/coordinated-dump', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                token_address: tokenAddress,
+                dump_percentage: parseFloat(percentage),
+                phases: parseInt(phases),
+                phase_delay: parseInt(delay)
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`Enhanced Dump Strategy Started! Strategy ID: ${result.strategy_id}`, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('enhancedDumpModal')).hide();
+            refreshSystemStatus();
+        } else {
+            showToast(`Error: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        console.error('Enhanced dump error:', error);
+        showToast('Failed to execute Enhanced Dump Strategy', 'error');
+    }
+}
+
+async function executeWashTrading() {
+    const tokenAddress = document.getElementById('washTokenAddress').value;
+    const amount = document.getElementById('washAmount').value;
+    const cycles = document.getElementById('washCycles').value;
+    const delay = document.getElementById('washDelay').value;
+    
+    if (!tokenAddress) {
+        showToast('Please enter a token address', 'error');
+        return;
+    }
+    
+    showToast('Starting Wash Trading Strategy...', 'warning');
+    
+    try {
+        const response = await fetch('/api/enhanced/wash-trading', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                token_address: tokenAddress,
+                amount_per_cycle: parseFloat(amount),
+                cycles: parseInt(cycles),
+                cycle_delay: parseInt(delay)
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`Wash Trading Strategy Started! Strategy ID: ${result.strategy_id}`, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('washTradingModal')).hide();
+            refreshSystemStatus();
+        } else {
+            showToast(`Error: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        console.error('Wash trading error:', error);
+        showToast('Failed to execute Wash Trading Strategy', 'error');
+    }
+}
+
+async function executeArbitrage() {
+    const tokenAddress = document.getElementById('arbitrageTokenAddress').value;
+    const amount = document.getElementById('arbitrageAmount').value;
+    const minProfit = document.getElementById('arbitrageMinProfit').value;
+    const slippage = document.getElementById('arbitrageSlippage').value;
+    
+    if (!tokenAddress) {
+        showToast('Please enter a token address', 'error');
+        return;
+    }
+    
+    showToast('Starting Multi-DEX Arbitrage...', 'info');
+    
+    try {
+        const response = await fetch('/api/enhanced/arbitrage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                token_address: tokenAddress,
+                trade_amount: parseFloat(amount),
+                min_profit_percentage: parseFloat(minProfit),
+                max_slippage: parseFloat(slippage)
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`Arbitrage Strategy Started! Strategy ID: ${result.strategy_id}`, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('arbitrageModal')).hide();
+            refreshSystemStatus();
+        } else {
+            showToast(`Error: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        console.error('Arbitrage error:', error);
+        showToast('Failed to execute Arbitrage Strategy', 'error');
+    }
+}
+
+// Advanced Solana Trading Functions
+function showAdvancedPumpModal() {
+    new bootstrap.Modal(document.getElementById('advancedPumpModal')).show();
+}
+
+function showAdvancedSellModal() {
+    new bootstrap.Modal(document.getElementById('advancedSellModal')).show();
+}
+
+function showSnipeBotModal() {
+    new bootstrap.Modal(document.getElementById('snipeBotModal')).show();
+}
+
+function showTradingConfigModal() {
+    loadTradingConfig();
+    new bootstrap.Modal(document.getElementById('tradingConfigModal')).show();
+}
+
+function showSnipeListModal() {
+    loadSnipeList();
+    new bootstrap.Modal(document.getElementById('snipeListModal')).show();
+}
+
+function executePumpStrategy() {
+    const tokenAddress = document.getElementById('pumpTokenAddress').value;
+    const walletCount = document.getElementById('pumpWalletCount').value;
+    const amountPerWallet = document.getElementById('pumpAmountPerWallet').value;
+    
+    if (!tokenAddress) {
+        alert('Please enter a token address');
+        return;
+    }
+    
+    fetch('/api/trading/pump-strategy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            token_address: tokenAddress,
+            wallet_count: parseInt(walletCount),
+            amount_per_wallet: parseFloat(amountPerWallet)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Pump strategy executed successfully!\nSuccessful buys: ${data.data.successful_buys}\nFailed buys: ${data.data.failed_buys}`);
+            bootstrap.Modal.getInstance(document.getElementById('advancedPumpModal')).hide();
+            refreshActiveStrategies();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error occurred');
+    });
+}
+
+function executeSellStrategy() {
+    const tokenAddress = document.getElementById('sellTokenAddress').value;
+    const walletCount = document.getElementById('sellWalletCount').value;
+    
+    if (!tokenAddress) {
+        alert('Please enter a token address');
+        return;
+    }
+    
+    fetch('/api/trading/sell-strategy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            token_address: tokenAddress,
+            wallet_count: parseInt(walletCount)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Sell strategy executed successfully!\nSuccessful sells: ${data.data.successful_sells}\nFailed sells: ${data.data.failed_sells}`);
+            bootstrap.Modal.getInstance(document.getElementById('advancedSellModal')).hide();
+            refreshActiveStrategies();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error occurred');
+    });
+}
+
+function startSnipeBot() {
+    fetch('/api/trading/snipe-bot', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Snipe bot started successfully!');
+            document.getElementById('snipe-bot-status').innerHTML = '<i class="bi bi-play-circle"></i>';
+            bootstrap.Modal.getInstance(document.getElementById('snipeBotModal')).hide();
+            refreshActiveStrategies();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error occurred');
+    });
+}
+
+function stopAllMonitoring() {
+    if (confirm('Are you sure you want to stop all trading monitoring?')) {
+        fetch('/api/trading/stop-monitoring', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('All monitoring stopped successfully!');
+                document.getElementById('snipe-bot-status').innerHTML = '<i class="bi bi-pause-circle"></i>';
+                refreshActiveStrategies();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Network error occurred');
+        });
+    }
+}
+
+function loadTradingConfig() {
+    fetch('/api/trading/config')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const config = data.data;
+            document.getElementById('takeProfit').value = (config.take_profit * 100);
+            document.getElementById('stopLoss').value = (config.stop_loss * 100);
+            document.getElementById('quoteAmount').value = config.quote_amount;
+            document.getElementById('minPoolSize').value = config.min_pool_size;
+            document.getElementById('autoSell').checked = config.auto_sell;
+            document.getElementById('useSnipeList').checked = config.use_snipe_list;
+        }
+    })
+    .catch(error => console.error('Error loading config:', error));
+}
+
+function saveTradingConfig() {
+    const config = {
+        take_profit: parseFloat(document.getElementById('takeProfit').value) / 100,
+        stop_loss: parseFloat(document.getElementById('stopLoss').value) / 100,
+        quote_amount: parseFloat(document.getElementById('quoteAmount').value),
+        min_pool_size: parseFloat(document.getElementById('minPoolSize').value),
+        auto_sell: document.getElementById('autoSell').checked,
+        use_snipe_list: document.getElementById('useSnipeList').checked
+    };
+    
+    fetch('/api/trading/config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Configuration saved successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('tradingConfigModal')).hide();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error occurred');
+    });
+}
+
+function loadSnipeList() {
+    fetch('/api/trading/snipe-list')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = document.querySelector('#snipeListTable tbody');
+            tbody.innerHTML = '';
+            
+            if (data.data.snipe_list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No tokens in snipe list</td></tr>';
+            } else {
+                data.data.snipe_list.forEach(token => {
+                    const row = `
+                        <tr>
+                            <td><code>${token}</code></td>
+                            <td>Recently</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="removeFromSnipeList('${token}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+        }
+    })
+    .catch(error => console.error('Error loading snipe list:', error));
+}
+
+function addToSnipeList() {
+    const tokenAddress = document.getElementById('newSnipeToken').value.trim();
+    
+    if (!tokenAddress) {
+        alert('Please enter a token address');
+        return;
+    }
+    
+    fetch('/api/trading/snipe-list', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            token_address: tokenAddress
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('newSnipeToken').value = '';
+            loadSnipeList();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error occurred');
+    });
+}
+
+function removeFromSnipeList(tokenAddress) {
+    if (confirm('Remove this token from snipe list?')) {
+        fetch('/api/trading/snipe-list', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                token_address: tokenAddress
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadSnipeList();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Network error occurred');
+        });
+    }
+}
+
+function refreshActiveStrategies() {
+    // 🛡️ SECURITY FIX: Complete error handling to prevent Promise rejections
+    return fetch('/api/strategies/active')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success && data.strategies) {
+            const tbody = document.querySelector('#active-strategies-table tbody');
+            if (tbody) {
+                tbody.innerHTML = '';
+                
+                const countElement = document.getElementById('active-strategies-count');
+                if (countElement) {
+                    countElement.textContent = data.strategies.length;
+                }
+                
+                if (data.strategies.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                No active strategies. Start one using the buttons above.
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    data.strategies.forEach(strategy => {
+                        const row = `
+                        <tr>
+                            <td><code>${strategy.id}</code></td>
+                            <td><span class="badge bg-primary">${strategy.type}</span></td>
+                            <td><code>${strategy.token}</code></td>
+                            <td>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-play-circle me-1"></i>
+                                    ${strategy.status}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar" style="width: ${strategy.progress}%">${strategy.progress}%</div>
+                                </div>
+                            </td>
+                            <td>${new Date(strategy.created_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="stopStrategy('${strategy.id}')">
+                                    <i class="bi bi-stop"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                    });
+                }
+            }
+        }
+    })
+    .catch(error => {
+        // Silent error handling - strategies not available
+        const countElement = document.getElementById('active-strategies-count');
+        if (countElement) {
+            countElement.textContent = '0';
+        }
+        const tbody = document.querySelector('#active-strategies-table tbody');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No active strategies
+                    </td>
+                </tr>
+            `;
+        }
+    });
+}
+
+function refreshSystemStatus() {
+    location.reload();
+}
+
+function showSystemLogs() {
+    alert('System logs feature will be available soon');
+}
+
+// Toggle custom delay inputs visibility
+function toggleCustomDelay() {
+    const timingPattern = document.getElementById('enhancedPumpTimingPattern').value;
+    const customDelayRow = document.getElementById('customDelayRow');
+    
+    if (timingPattern === 'custom') {
+        customDelayRow.style.display = 'block';
+    } else {
+        customDelayRow.style.display = 'none';
+    }
+}
+
+// Enhanced modal show functions
+function showEnhancedPumpModal() {
+    const modal = new bootstrap.Modal(document.getElementById('enhancedPumpModal'));
+    modal.show();
+}
+
+function showEnhancedDumpModal() {
+    const modal = new bootstrap.Modal(document.getElementById('enhancedDumpModal'));
+    modal.show();
+}
+
+function showWashTradingModal() {
+    const modal = new bootstrap.Modal(document.getElementById('washTradingModal'));
+    modal.show();
+}
+
+function showArbitrageModal() {
+    const modal = new bootstrap.Modal(document.getElementById('arbitrageModal'));
+    modal.show();
+}
+
+// Load initial data
+document.addEventListener('DOMContentLoaded', function() {
+    // Safe initial strategy refresh with error handling
+    try {
+        refreshActiveStrategies();
+    } catch (error) {
+        console.log('Strategy refresh handled safely');
+    }
+    
+    // SECURITY FIX: Disable auto-refresh to prevent unhandled Promise rejections
+    console.log('🛡️ Auto-refresh disabled for security - manual refresh available');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,598 @@
+{% extends 'layout.html' %}
+
+{% block title %}Wallets{% endblock %}
+
+{% block page_title %}Wallet Management{% endblock %}
+{% block page_subtitle %}Create and manage Solana wallets{% endblock %}
+
+{% block content %}
+
+<!-- TÜRKÇE KULLANICI REHBERİ - CÜZDAN YÖNETİMİ -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-success border-0 shadow-sm" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; border-radius: 12px;">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-wallet-fill fs-3 me-3 mt-1"></i>
+                <div>
+                    <h5 class="mb-2"><i class="bi bi-wallet2 me-2"></i>Cüzdan Yönetimi Rehberi</h5>
+                    <p class="mb-2"><strong>Bu sayfa nedir?</strong> Solana blockchain'inde kullanacağınız cüzdanları burada oluşturur, görüntüler ve yönetirsiniz.</p>
+                    <p class="mb-2"><strong>Cüzdan oluşturma:</strong> "Create Wallets" butonu ile istediğiniz sayıda cüzdan oluşturabilirsiniz. Her cüzdan otomatik olarak unique bir adrese sahip olur.</p>
+                    <p class="mb-2"><strong>Cüzdan işlemleri:</strong> SOL transfer etmek, token bakiyelerini görüntülemek ve cüzdan silmek için her cüzdanın yanındaki butonları kullanın.</p>
+                    <p class="mb-0"><strong>Sonraki adım:</strong> Cüzdan oluşturduktan sonra SOL transfer edin, ardından "Strategies" menüsünden trading stratejilerini başlatabilirsiniz.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <!-- Create Wallet Card -->
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Yeni Cüzdan Oluştur</h5>
+            </div>
+            <div class="card-body">
+                <form id="create-wallet-form" onsubmit="window.createWalletsWithNetwork(event)">
+                    <div class="mb-3">
+                        <label for="count" class="form-label">Number of Wallets</label>
+                        <input type="number" class="form-control" id="count" name="count" min="1" max="200" value="1" required>
+                        <div class="form-text">How many wallets to create (1-200)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="network" class="form-label">Network</label>
+                        <select class="form-select" id="network" name="network" required>
+                            <option value="testnet" selected>Testnet (Test Environment)</option>
+                            <option value="devnet">Devnet (Development)</option>
+                            <option value="mainnet-beta">Mainnet (Production)</option>
+                        </select>
+                        <div class="form-text">Choose network: Testnet for testing, Devnet for development, Mainnet for production</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-wallet2 me-2"></i> Create Wallets
+                        </button>
+                        <button type="button" class="btn btn-success" id="create-test-wallets-btn">
+                            <i class="bi bi-plus-circle me-2"></i> Create Test Wallets (with Airdrop)
+                        </button>
+                        <button type="button" class="btn btn-warning" id="delete-all-wallets-btn">
+                            <i class="bi bi-trash3 me-2"></i> Delete All Wallets
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <!-- Distribute SOL Card -->
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Distribute SOL</h5>
+            </div>
+            <div class="card-body">
+                <form id="distribute-sol-form">
+                    <div class="mb-3">
+                        <label for="main-wallet" class="form-label">Source Wallet</label>
+                        <select class="form-select" id="main-wallet" name="main-wallet" required>
+                            <option value="" selected disabled>Select source wallet</option>
+                            <!-- Will be populated dynamically -->
+                        </select>
+                        <div class="form-text">Select wallet to distribute SOL from</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="target-wallets" class="form-label mb-0">Target Wallets</label>
+                            <div class="btn-group">
+                                <button type="button" id="select-all-wallets" class="btn btn-primary">
+                                    <i class="bi bi-check-all"></i> Tümünü Seç
+                                </button>
+                                <button type="button" id="save-wallet-selection" class="btn btn-success">
+                                    <i class="bi bi-save"></i> Seçimi Kaydet
+                                </button>
+                                <button type="button" id="load-wallet-selection" class="btn btn-info">
+                                    <i class="bi bi-arrow-repeat"></i> Son Seçimi Yükle
+                                </button>
+                            </div>
+                        </div>
+                        <select class="form-select" id="target-wallets" name="target-wallets" multiple required style="min-height: 150px;">
+                            <!-- Will be populated dynamically -->
+                        </select>
+                        <div class="form-text">Select wallets to distribute SOL to (hold Ctrl/Cmd to select multiple)</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="min-amount" class="form-label">Min Amount (SOL)</label>
+                            <input type="number" class="form-control" id="min-amount" name="min-amount" min="0.001" step="0.001" value="0.1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="max-amount" class="form-label">Max Amount (SOL)</label>
+                            <input type="number" class="form-control" id="max-amount" name="max-amount" min="0.001" step="0.001" value="0.5" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="randomize" class="form-label">Randomize Amounts</label>
+                        <select class="form-select" id="randomize" name="randomize">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                        <div class="form-text">Randomize amounts between min and max</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Additional Actions</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success flex-grow-1">
+                                <i class="bi bi-arrow-left-right me-2"></i> Distribute SOL
+                            </button>
+                            <!-- Airdrop button removed as requested (only works on testnet/devnet) -->
+                        </div>
+                        <div class="form-text">Distribute SOL from source wallet to target wallets</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallet List -->
+<div class="card dashboard-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Your Wallets</h5>
+        <div class="wallet-filters me-2">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Wallet filters">
+                <button type="button" class="btn btn-secondary active" data-filter="all">Tümü</button>
+                <button type="button" class="btn btn-outline-secondary" data-filter="network:mainnet-beta">Mainnet</button>
+                <button type="button" class="btn btn-outline-secondary" data-filter="network:devnet">Devnet</button>
+                <button type="button" class="btn btn-outline-secondary" data-filter="pool:true">Ana Havuz</button>
+                <button type="button" class="btn btn-outline-secondary" data-filter="balance:high">Yüksek Bakiye</button>
+                <button type="button" class="btn btn-outline-secondary" data-filter="balance:low">Düşük Bakiye</button>
+            </div>
+        </div>
+        <div>
+
+            <button class="btn btn-sm btn-outline-primary" id="refresh-wallets">
+                <i class="bi bi-arrow-repeat"></i> Refresh
+            </button>
+            <button class="btn btn-sm btn-primary">
+                <i class="bi bi-upload"></i> Import
+            </button>
+        </div>
+    </div>
+    <div class="card-body wallet-list-container">
+        <!-- Will be populated dynamically -->
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Loading wallets...</p>
+        </div>
+    </div>
+    
+    <!-- Include the token management modals -->
+    {% include 'modals/wallet_tokens_modal.html' %}
+</div>
+
+<!-- Mass Sell Confirmation Modal -->
+<div class="modal fade" id="massSellConfirmationModal" tabindex="-1" aria-labelledby="massSellConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="massSellConfirmationModalLabel">Tüm Cüzdanlardaki Tokenleri SOL'a Çevir</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> 
+                    <strong>DİKKAT!</strong> Bu işlem, tüm cüzdanlardaki <strong>BÜTÜN tokenleri</strong> SOL'a çevirecektir. Bu işlem geri alınamaz!
+                </div>
+                
+                <div class="mb-3">
+                    <label for="mass-sell-slippage-bps" class="form-label">İzin Verilen Fiyat Kayması (Slippage)</label>
+                    <select class="form-select" id="mass-sell-slippage-bps">
+                        <option value="50">0.5%</option>
+                        <option value="100" selected>1%</option>
+                        <option value="200">2%</option>
+                        <option value="500">5%</option>
+                        <option value="1000">10%</option>
+                    </select>
+                    <small class="text-muted">Daha yüksek değerler, işlemin başarı şansını artırır ancak daha fazla fiyat kayması riski taşır.</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="mass-sell-wallet-filter" class="form-label">Cüzdan Filtreleri (İsteğe Bağlı)</label>
+                    <select class="form-select mb-2" id="mass-sell-wallet-filter">
+                        <option value="all" selected>Tüm Cüzdanlar</option>
+                        <option value="mainnet">Sadece Mainnet Cüzdanları</option>
+                        <option value="devnet">Sadece Devnet Cüzdanları</option>
+                    </select>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="exclude-main-wallet">
+                        <label class="form-check-label" for="exclude-main-wallet">
+                            Ana havuz cüzdanları hariç tut
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i> 
+                    Bu işlem, tüm cüzdanlardaki tokenleri toplu olarak Jupiter Swap kullanarak SOL'a çevirecektir. İşlem süresi cüzdan ve token sayısına bağlı olarak değişebilir.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" id="confirm-mass-sell">
+                    <i class="bi bi-currency-exchange"></i> Tüm Tokenleri SOL'a Çevir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize wallet manager
+        WalletManager.init();
+        
+        // Load wallets into distribute SOL dropdowns
+        loadWalletsIntoDropdowns();
+        
+        // Refresh wallets button
+        const refreshBtn = document.getElementById('refresh-wallets');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                WalletManager.loadWallets();
+                loadWalletsIntoDropdowns(); // Dropdown'ları da güncelle
+            });
+        }
+        
+        // Mass sell tokens button
+        const massSellBtn = document.getElementById('mass-sell-tokens');
+        if (massSellBtn) {
+            massSellBtn.addEventListener('click', function() {
+                // Show confirmation modal
+                const massSellModal = new bootstrap.Modal(document.getElementById('massSellConfirmationModal'));
+                massSellModal.show();
+            });
+        }
+        
+        // Confirm mass sell button
+        const confirmMassSellBtn = document.getElementById('confirm-mass-sell');
+        if (confirmMassSellBtn) {
+            confirmMassSellBtn.addEventListener('click', function() {
+                // Get slippage and filter settings
+                const slippageBps = document.getElementById('mass-sell-slippage-bps').value;
+                const walletFilter = document.getElementById('mass-sell-wallet-filter').value;
+                const excludeMainWallet = document.getElementById('exclude-main-wallet').checked;
+                
+                // Disable button and show loading state
+                confirmMassSellBtn.disabled = true;
+                confirmMassSellBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> İşleniyor...';
+                
+                // Prepare wallet IDs based on filters if needed
+                let walletIds = [];
+                if (walletFilter !== 'all' || excludeMainWallet) {
+                    const wallets = WalletManager.getWallets();
+                    
+                    // Filter wallets based on criteria
+                    wallets.forEach(wallet => {
+                        let includeWallet = true;
+                        
+                        if (walletFilter === 'mainnet' && wallet.network !== 'mainnet-beta') {
+                            includeWallet = false;
+                        }
+                        
+                        if (walletFilter === 'devnet' && wallet.network !== 'devnet') {
+                            includeWallet = false;
+                        }
+                        
+                        if (excludeMainWallet && wallet.is_main_pool) {
+                            includeWallet = false;
+                        }
+                        
+                        if (includeWallet) {
+                            walletIds.push(wallet.id);
+                        }
+                    });
+                }
+                
+                // Make API request to sell all tokens
+                fetch('/api/wallets/mass-sell-tokens', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        wallet_ids: walletIds,  // Empty means all wallets
+                        slippage_bps: parseInt(slippageBps, 10)
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide modal
+                    bootstrap.Modal.getInstance(document.getElementById('massSellConfirmationModal')).hide();
+                    
+                    if (data.success) {
+                        // Show success message
+                        Toast.success(`Toplu token satışı başlatıldı. ${data.data.processed_wallets} cüzdan işlendi, ${data.data.token_success_count} token başarıyla satıldı.`);
+                        
+                        // Refresh wallet list
+                        setTimeout(() => {
+                            WalletManager.loadWallets();
+                        }, 2000);
+                    } else {
+                        // Show error message
+                        Toast.error('Toplu token satışı başlatılırken hata oluştu: ' + (data.error || 'Bilinmeyen hata'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting mass sell:', error);
+                    Toast.error('Toplu token satışı başlatılırken hata oluştu: ' + error.message);
+                })
+                .finally(() => {
+                    // Reset button state
+                    confirmMassSellBtn.disabled = false;
+                    confirmMassSellBtn.innerHTML = '<i class="bi bi-currency-exchange"></i> Tüm Tokenleri SOL\'a Çevir';
+                });
+            });
+        }
+        
+        // Select all wallets button
+        const selectAllBtn = document.getElementById('select-all-wallets');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function() {
+                const targetWallets = document.getElementById('target-wallets');
+                if (targetWallets) {
+                    // Select all options
+                    for (let i = 0; i < targetWallets.options.length; i++) {
+                        targetWallets.options[i].selected = true;
+                    }
+                }
+            });
+        }
+        
+        // Save wallet selection button
+        const saveSelectionBtn = document.getElementById('save-wallet-selection');
+        if (saveSelectionBtn) {
+            saveSelectionBtn.addEventListener('click', function() {
+                const targetWallets = document.getElementById('target-wallets');
+                if (targetWallets) {
+                    // Get selected wallet IDs
+                    const selectedWalletIds = Array.from(targetWallets.selectedOptions).map(option => option.value);
+                    
+                    // Save to localStorage
+                    localStorage.setItem('savedWalletSelection', JSON.stringify(selectedWalletIds));
+                    
+                    // Show confirmation
+                    Toast.success(`${selectedWalletIds.length} cüzdan seçimi kaydedildi`);
+                }
+            });
+        }
+        
+        // Load wallet selection button
+        const loadSelectionBtn = document.getElementById('load-wallet-selection');
+        if (loadSelectionBtn) {
+            loadSelectionBtn.addEventListener('click', function() {
+                loadSavedWalletSelection();
+            });
+        }
+        
+        // Function to load saved wallet selection
+        function loadSavedWalletSelection(showNotifications = true) {
+            const targetWallets = document.getElementById('target-wallets');
+            if (targetWallets) {
+                // Get saved selection from localStorage
+                const savedSelectionJson = localStorage.getItem('savedWalletSelection');
+                
+                if (savedSelectionJson) {
+                    try {
+                        const savedWalletIds = JSON.parse(savedSelectionJson);
+                        
+                        // Deselect all options first
+                        for (let i = 0; i < targetWallets.options.length; i++) {
+                            targetWallets.options[i].selected = false;
+                        }
+                        
+                        // Select saved options
+                        let selectionCount = 0;
+                        for (let i = 0; i < targetWallets.options.length; i++) {
+                            if (savedWalletIds.includes(targetWallets.options[i].value)) {
+                                targetWallets.options[i].selected = true;
+                                selectionCount++;
+                            }
+                        }
+                        
+                        // Show confirmation if requested
+                        if (showNotifications) {
+                            if (selectionCount > 0) {
+                                WashBotToast.success(`${selectionCount} wallets loaded`);
+                            } else {
+                                WashBotToast.warning('Saved wallet selection not found or wallets no longer available');
+                            }
+                        }
+                        
+                        return selectionCount;
+                    } catch (error) {
+                        console.error('Error loading saved wallet selection:', error);
+                        if (showNotifications) {
+                            WashBotToast.error('Error loading saved wallet selection');
+                        }
+                    }
+                } else if (showNotifications) {
+                    WashBotToast.warning('Saved wallet selection not found');
+                }
+            }
+            return 0;
+        }
+        
+        // Function to load wallets into distribute SOL dropdowns
+        async function loadWalletsIntoDropdowns() {
+            try {
+                const response = await fetch('/api/wallets');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const wallets = data.data;
+                    const mainWalletSelect = document.getElementById('main-wallet');
+                    const targetWalletsSelect = document.getElementById('target-wallets');
+                    
+                    // Clear existing options (except placeholder)
+                    if (mainWalletSelect) {
+                        mainWalletSelect.innerHTML = '<option value="" selected disabled>Select source wallet</option>';
+                        wallets.forEach(wallet => {
+                            const option = document.createElement('option');
+                            option.value = wallet.id;
+                            option.textContent = `${wallet.name || 'Wallet'} (${wallet.public_key.substring(0, 8)}...) - ${wallet.balance} SOL`;
+                            mainWalletSelect.appendChild(option);
+                        });
+                    }
+                    
+                    // Populate target wallets
+                    if (targetWalletsSelect) {
+                        targetWalletsSelect.innerHTML = '';
+                        wallets.forEach(wallet => {
+                            const option = document.createElement('option');
+                            option.value = wallet.id;
+                            option.textContent = `${wallet.name || 'Wallet'} (${wallet.public_key.substring(0, 8)}...) - ${wallet.balance} SOL`;
+                            targetWalletsSelect.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading wallets into dropdowns:', error);
+            }
+        }
+        
+        // Distribute SOL form submission
+        const distributeForm = document.getElementById('distribute-sol-form');
+        if (distributeForm) {
+            distributeForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const mainWalletId = document.getElementById('main-wallet').value;
+                const targetWalletIds = Array.from(document.getElementById('target-wallets').selectedOptions).map(option => option.value);
+                const minAmount = parseFloat(document.getElementById('min-amount').value);
+                const maxAmount = parseFloat(document.getElementById('max-amount').value);
+                const randomize = document.getElementById('randomize').value === 'yes';
+                
+                // Validate form
+                if (!mainWalletId) {
+                    alert('Please select a source wallet');
+                    return;
+                }
+                
+                if (targetWalletIds.length === 0) {
+                    alert('Please select at least one target wallet');
+                    return;
+                }
+                
+                if (minAmount <= 0) {
+                    alert('Minimum amount must be greater than 0');
+                    return;
+                }
+                
+                if (maxAmount < minAmount) {
+                    alert('Maximum amount must be greater than or equal to minimum amount');
+                    return;
+                }
+                
+                // Update UI to show loading
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm"></i> Distributing...';
+                
+                // Make API request
+                fetch('/api/wallets/distribute-sol', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        main_wallet_id: mainWalletId,
+                        target_wallet_ids: targetWalletIds,
+                        min_amount: minAmount,
+                        max_amount: maxAmount,
+                        randomize: randomize
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Save the successful wallet selection for future use
+                        const selectedWalletIds = Array.from(document.getElementById('target-wallets').selectedOptions).map(option => option.value);
+                        localStorage.setItem('savedWalletSelection', JSON.stringify(selectedWalletIds));
+                        localStorage.setItem('lastDistributionTime', new Date().toISOString());
+                        
+                        Toast.success('SOL dağıtımı başarılı! Cüzdan seçimi kaydedildi.');
+                        WalletManager.loadWallets(); // Refresh wallet list
+                    } else {
+                        Toast.error('Hata: ' + (data.error || 'Bilinmeyen hata'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error distributing SOL:', error);
+                    Toast.error('SOL dağıtım hatası. Detaylar için konsolu kontrol edin.');
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+            });
+        }
+        
+        // Airdrop functionality removed as requested (only works on testnet/devnet)
+        
+        // Populate source wallet dropdown when wallets are loaded
+        fetch('/api/wallets/get').then(response => response.json()).then(response => {
+            if (response.success && response.data) {
+                const mainWalletSelect = document.getElementById('main-wallet');
+                const targetWalletSelect = document.getElementById('target-wallets');
+                
+                if (mainWalletSelect && targetWalletSelect) {
+                    // Clear existing options
+                    mainWalletSelect.innerHTML = '<option value="" selected disabled>Select source wallet</option>';
+                    targetWalletSelect.innerHTML = '';
+                    
+                    // Add wallets to dropdowns
+                    response.data.forEach(wallet => {
+                        // Source wallet dropdown
+                        const mainOption = document.createElement('option');
+                        mainOption.value = wallet.id;
+                        
+                        // Güvenli erişim için null kontrolü
+                        const walletName = wallet.name || '';
+                        const walletAddress = wallet.address || '';
+                        const balance = typeof wallet.balance === 'number' ? wallet.balance.toFixed(4) : '0.0000';
+                        
+                        mainOption.text = `${walletName || walletAddress.substring(0, 8)} (${balance} SOL)`;
+                        mainWalletSelect.appendChild(mainOption);
+                        
+                        // Target wallet dropdown
+                        const targetOption = document.createElement('option');
+                        targetOption.value = wallet.id;
+                        targetOption.text = `${walletName || walletAddress.substring(0, 8)} (${walletAddress.substring(0, 8)}...)`;
+                        targetWalletSelect.appendChild(targetOption);
+                    });
+                    
+                    // Auto-load saved wallet selection if available
+                    // We use setTimeout to ensure all elements are fully rendered
+                    setTimeout(() => {
+                        loadSavedWalletSelection(false); // Pass false to prevent showing toast messages
+                    }, 300);
+                }
+            }
+        }).catch(error => {
+            console.error('Error loading wallets for dropdowns:', error);
+        });
+    });
+</script>
+{% endblock %}

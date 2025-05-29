@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WashBot - Solana Trading Bot with Advanced Features">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}WashBot{% endblock %} - Solana Trading Bot</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+        
+        main {
+            min-height: calc(100vh - 100px);
+            padding-bottom: 50px;
+        }
+        
+        .container-fluid {
+            max-width: 100%;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    {% include 'components/navbar.html' %}
+    
+    <!-- Main Content -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer bg-dark text-light py-3 border-top" style="background-color: #1a1a1a !important;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span style="color: #fff !important;">&copy; 2025 X/PROJECT Şirketi - Şükrü Can Çiftçi tarafından geliştirilmiştir</span>
+                    <span class="mx-2" style="color: #fff !important;">|</span>
+                    <span style="color: #fff !important;">WashBot v2.0</span>
+                </div>
+                <div>
+                    <a href="#" class="text-muted me-3" data-bs-toggle="tooltip" title="Documentation">
+                        <i class="bi bi-book"></i>
+                    </a>
+                    <a href="#" class="text-muted me-3" data-bs-toggle="tooltip" title="Support">
+                        <i class="bi bi-question-circle"></i>
+                    </a>
+                    <a href="#" class="text-muted" data-bs-toggle="tooltip" title="Settings">
+                        <i class="bi bi-gear"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

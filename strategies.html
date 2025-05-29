@@ -1,0 +1,716 @@
+{% extends 'layout.html' %}
+
+{% block title %}Strategies{% endblock %}
+
+{% block page_title %}Trading Strategies{% endblock %}
+{% block page_subtitle %}Manage and execute automated trading strategies{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="newStrategyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-plus-lg me-1"></i> New Strategy
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="newStrategyDropdown">
+        <li>
+            <a class="dropdown-item" href="#" onclick="StrategyManager.showPumpModal('', '')">
+                <i class="bi bi-graph-up-arrow me-2 text-success"></i> Pump Strategy
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="#" onclick="StrategyManager.showDumpModal('', '')">
+                <i class="bi bi-graph-down-arrow me-2 text-danger"></i> Dump Strategy
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="#" onclick="StrategyManager.showGradualSellModal('', '')">
+                <i class="bi bi-cash-stack me-2 text-info"></i> Gradual Sell Strategy
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="#" onclick="StrategyManager.showHybridTradingModal('', '')">
+                <i class="bi bi-arrow-left-right me-2 text-warning"></i> Hybrid Trading Strategy
+            </a>
+        </li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- TÜRKÇE KULLANICI REHBERİ - STRATEJİLER -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-danger border-0 shadow-sm" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; border-radius: 12px;">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-lightning-charge-fill fs-3 me-3 mt-1"></i>
+                <div>
+                    <h5 class="mb-2"><i class="bi bi-graph-up-arrow me-2"></i>Trading Stratejileri Rehberi</h5>
+                    <p class="mb-2"><strong>Bu sayfa nedir?</strong> Otomatik trading stratejilerini başlatıp yönetebileceğiniz ana kontrol merkezidir.</p>
+                    <p class="mb-2"><strong>Strateji türleri:</strong> Pump Strategy (fiyat artırma), Dump Strategy (fiyat düşürme), Gradual Sell (kademeli satış) ve diğer otomatik stratejiler mevcuttur.</p>
+                    <p class="mb-2"><strong>Gereksinimler:</strong> Strateji başlatmadan önce cüzdanlarınızın SOL bakiyesi olmalı ve hedef token adresini doğru girmelisiniz.</p>
+                    <p class="mb-0"><strong>Sonraki adım:</strong> Sağ üstteki "New Strategy" menüsünden bir strateji seçin, parametreleri belirleyin ve başlatın.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Strategy Tabs -->
+<div class="card dashboard-card mb-4">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="strategyTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-strategies" type="button" role="tab" aria-controls="active-strategies" aria-selected="true">
+                    <i class="bi bi-play-fill me-1"></i> Active Strategies
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-strategies" type="button" role="tab" aria-controls="completed-strategies" aria-selected="false">
+                    <i class="bi bi-check-circle me-1"></i> Completed
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="failed-tab" data-bs-toggle="tab" data-bs-target="#failed-strategies" type="button" role="tab" aria-controls="failed-strategies" aria-selected="false">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Failed
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="strategyTabsContent">
+            <!-- Active Strategies Tab -->
+            <div class="tab-pane fade show active" id="active-strategies" role="tabpanel" aria-labelledby="active-tab">
+                <div class="strategy-list-container" id="active-strategies-list">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Loading active strategies...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Completed Strategies Tab -->
+            <div class="tab-pane fade" id="completed-strategies" role="tabpanel" aria-labelledby="completed-tab">
+                <div class="strategy-list-container" id="completed-strategies-list">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Loading completed strategies...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Failed Strategies Tab -->
+            <div class="tab-pane fade" id="failed-strategies" role="tabpanel" aria-labelledby="failed-tab">
+                <div class="strategy-list-container" id="failed-strategies-list">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Loading failed strategies...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Strategy Templates -->
+<div class="card dashboard-card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Strategy Templates</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <!-- Pump Strategy Template -->
+            <div class="col-md-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Pump Strategy</h5>
+                            <div class="bg-success bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-graph-up-arrow text-success fs-4"></i>
+                            </div>
+                        </div>
+                        <p class="card-text">Execute coordinated buys to increase token price and volume over a defined period.</p>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Target price increase
+                            </li>
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Multi-wallet coordination
+                            </li>
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Volume amplification
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-success w-100" onclick="StrategyManager.showPumpModal('', '')">
+                            <i class="bi bi-plus-lg me-1"></i> Create Pump Strategy
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dump Strategy Template -->
+            <div class="col-md-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Dump Strategy</h5>
+                            <div class="bg-danger bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-graph-down-arrow text-danger fs-4"></i>
+                            </div>
+                        </div>
+                        <p class="card-text">Execute coordinated sells to decrease token price over a defined period.</p>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Target price decrease
+                            </li>
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Timed sell coordination
+                            </li>
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Increasing sell pressure
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer d-flex flex-column gap-2">
+                        <button class="btn btn-danger w-100" onclick="StrategyManager.showDumpModal('', '')">
+                            <i class="bi bi-plus-lg me-1"></i> Create Dump Strategy
+                        </button>
+                        <button class="btn btn-outline-danger w-100" onclick="StrategyManager.showMassSellModal()">
+                            <i class="bi bi-currency-exchange me-1"></i> Tüm Tokenleri Sat
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gradual Sell Strategy Template -->
+            <div class="col-md-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Gradual Sell</h5>
+                            <div class="bg-info bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-cash-stack text-info fs-4"></i>
+                            </div>
+                        </div>
+                        <p class="card-text">Sell tokens gradually at predefined price targets with stop-loss protection.</p>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Multi-stage selling
+                            </li>
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Price target automation
+                            </li>
+                            <li class="list-group-item bg-transparent">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Stop-loss protection
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-info w-100 text-white" onclick="StrategyManager.showGradualSellModal('', '')">
+                            <i class="bi bi-plus-lg me-1"></i> Create Gradual Sell
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Strategy Modals -->
+<!-- Pump Strategy Modal -->
+<div class="modal fade" id="pump-strategy-modal" tabindex="-1" aria-labelledby="pumpStrategyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pumpStrategyModalLabel">
+                    <i class="bi bi-graph-up-arrow me-2"></i>
+                    Pump Strategy - <span id="pump-token-symbol">New Token</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pump-strategy-form">
+                    <div class="mb-3">
+                        <label for="token-address" class="form-label">Token Address</label>
+                        <input type="text" class="form-control" id="pump-token-address" name="token-address" required>
+                        <div class="form-text">Enter the Solana token mint address to pump</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="target-price-increase" class="form-label">Target Price Increase (%)</label>
+                        <input type="range" class="form-range" id="target-price-increase" name="target-price-increase" min="5" max="500" value="50" oninput="this.nextElementSibling.value = this.value">
+                        <o>50</o>
+                        <div class="form-text">Target percentage price increase (5-500%)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="volume-factor" class="form-label">Volume Factor</label>
+                        <input type="range" class="form-range" id="volume-factor" name="volume-factor" min="1" max="5" step="0.1" value="2" oninput="this.nextElementSibling.value = this.value">
+                        <o>2</o>
+                        <div class="form-text">Target volume increase factor</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="wallet-count" class="form-label">Number of Wallets</label>
+                            <input type="number" class="form-control" id="wallet-count" name="wallet-count" min="1" max="20" value="5" required>
+                            <div class="form-text">How many wallets to use</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="time-period-minutes" class="form-label">Time Period (minutes)</label>
+                            <input type="number" class="form-control" id="time-period-minutes" name="time-period-minutes" min="1" max="60" value="10" required>
+                            <div class="form-text">Duration of the operation</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="interval-seconds" class="form-label">Interval (seconds)</label>
+                            <input type="number" class="form-control" id="interval-seconds" name="interval-seconds" min="5" max="120" value="30" required>
+                            <div class="form-text">Seconds between buys</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="initial-buy-percentage" class="form-label">Initial Buy (%)</label>
+                            <input type="number" class="form-control" id="initial-buy-percentage" name="initial-buy-percentage" min="1" max="50" value="10" required>
+                            <div class="form-text">Initial buy percentage</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enable-periodic-sells" name="enable-periodic-sells">
+                                <label class="form-check-label" for="enable-periodic-sells">Enable Periodic Sells</label>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="sell-after-n-buys" class="form-label">Sell After N Buys</label>
+                                    <input type="number" class="form-control" id="sell-after-n-buys" name="sell-after-n-buys" min="1" max="20" value="5">
+                                    <div class="form-text">Execute sell after this many buy operations</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="sell-percentage" class="form-label">Sell Percentage (%)</label>
+                                    <input type="number" class="form-control" id="sell-percentage" name="sell-percentage" min="1" max="100" value="50">
+                                    <div class="form-text">Percentage of tokens to sell each time</div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <small>Enabling periodic sells allows the strategy to maintain SOL balances in wallets by automatically selling some tokens after a certain number of buy operations.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This strategy will execute real trades using your wallets.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="pump-strategy-form" class="btn btn-success">
+                    <i class="bi bi-play-fill me-1"></i> Start Pump Strategy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dump Strategy Modal -->
+<div class="modal fade" id="dump-strategy-modal" tabindex="-1" aria-labelledby="dumpStrategyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dumpStrategyModalLabel">
+                    <i class="bi bi-graph-down-arrow me-2"></i>
+                    Dump Strategy - <span id="dump-token-symbol">New Token</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dump-strategy-form">
+                    <div class="mb-3">
+                        <label for="dump-token-address" class="form-label">Token Address</label>
+                        <input type="text" class="form-control" id="dump-token-address" name="token-address" required>
+                        <div class="form-text">Enter the Solana token mint address to dump</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="target-price-decrease" class="form-label">Target Price Decrease (%)</label>
+                        <input type="range" class="form-range" id="target-price-decrease" name="target-price-decrease" min="5" max="500" value="50" oninput="this.nextElementSibling.value = this.value">
+                        <o>50</o>
+                        <div class="form-text">Target percentage price decrease (5-500%)</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="dump-wallet-count" class="form-label">Number of Wallets</label>
+                            <input type="number" class="form-control" id="dump-wallet-count" name="wallet-count" min="1" max="20" value="5" required>
+                            <div class="form-text">How many wallets to use</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dump-time-period-minutes" class="form-label">Time Period (minutes)</label>
+                            <input type="number" class="form-control" id="dump-time-period-minutes" name="time-period-minutes" min="1" max="60" value="10" required>
+                            <div class="form-text">Duration of the operation</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="dump-interval-seconds" class="form-label">Interval (seconds)</label>
+                            <input type="number" class="form-control" id="dump-interval-seconds" name="interval-seconds" min="5" max="120" value="30" required>
+                            <div class="form-text">Seconds between sells</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="initial-sell-percentage" class="form-label">Initial Sell (%)</label>
+                            <input type="number" class="form-control" id="initial-sell-percentage" name="initial-sell-percentage" min="1" max="50" value="10" required>
+                            <div class="form-text">Initial sell percentage</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This strategy will execute real trades using your wallets.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="dump-strategy-form" class="btn btn-danger">
+                    <i class="bi bi-play-fill me-1"></i> Start Dump Strategy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gradual Sell Strategy Modal -->
+<div class="modal fade" id="gradual-sell-strategy-modal" tabindex="-1" aria-labelledby="gradualSellStrategyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gradualSellStrategyModalLabel">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    Gradual Sell Strategy - <span id="gradual-sell-token-symbol">New Token</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="gradual-sell-strategy-form">
+                    <div class="mb-3">
+                        <label for="gradual-sell-token-address" class="form-label">Token Address</label>
+                        <input type="text" class="form-control" id="gradual-sell-token-address" name="token-address" required>
+                        <div class="form-text">Enter the Solana token mint address to sell gradually</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="sell-stage1-pct" class="form-label">Stage 1 Sell (%)</label>
+                            <input type="number" class="form-control" id="sell-stage1-pct" name="sell-stage1-pct" min="5" max="50" value="30" required>
+                            <div class="form-text">Percentage to sell at stage 1</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sell-stage1-target" class="form-label">Stage 1 Target (%)</label>
+                            <input type="number" class="form-control" id="sell-stage1-target" name="sell-stage1-target" min="1" max="500" value="50" required>
+                            <div class="form-text">Price increase target for stage 1 (1-500%)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="sell-stage2-pct" class="form-label">Stage 2 Sell (%)</label>
+                            <input type="number" class="form-control" id="sell-stage2-pct" name="sell-stage2-pct" min="5" max="50" value="30" required>
+                            <div class="form-text">Percentage to sell at stage 2</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sell-stage2-target" class="form-label">Stage 2 Target (%)</label>
+                            <input type="number" class="form-control" id="sell-stage2-target" name="sell-stage2-target" min="1" max="500" value="150" required>
+                            <div class="form-text">Price increase target for stage 2 (1-500%)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="sell-stage3-pct" class="form-label">Stage 3 Sell (%)</label>
+                            <input type="number" class="form-control" id="sell-stage3-pct" name="sell-stage3-pct" min="5" max="50" value="40" required>
+                            <div class="form-text">Percentage to sell at stage 3</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sell-stage3-target" class="form-label">Stage 3 Target (%)</label>
+                            <input type="number" class="form-control" id="sell-stage3-target" name="sell-stage3-target" min="1" max="500" value="300" required>
+                            <div class="form-text">Price increase target for stage 3 (1-500%)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="stop-loss" class="form-label">Stop Loss (%)</label>
+                            <input type="number" class="form-control" id="stop-loss" name="stop-loss" min="1" max="20" value="5" required>
+                            <div class="form-text">Stop loss percentage below entry</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="execution-wallet" class="form-label">Execution Wallet</label>
+                            <select class="form-select" id="execution-wallet" name="execution-wallet" required>
+                                <option value="">Select a wallet</option>
+                                <!-- Wallet options will be populated dynamically -->
+                            </select>
+                            <div class="form-text">Wallet to use for this strategy</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This strategy will execute real trades using your selected wallet.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="gradual-sell-strategy-form" class="btn btn-info text-white">
+                    <i class="bi bi-play-fill me-1"></i> Start Gradual Sell Strategy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize strategy manager
+        StrategyManager.init();
+        
+        // Function to load strategies
+        const loadStrategies = async () => {
+            try {
+                // This would be replaced with actual API calls in production
+                document.getElementById('active-strategies-list').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No active strategies found. Create a new strategy using the templates below.
+                    </div>
+                `;
+                
+                document.getElementById('completed-strategies-list').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No completed strategies found.
+                    </div>
+                `;
+                
+                document.getElementById('failed-strategies-list').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No failed strategies found.
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading strategies:', error);
+                Toast.error('Failed to load strategies');
+            }
+        };
+        
+        // Load initial data
+        loadStrategies();
+        
+        // Mass sell tokens button
+        const showMassSellModal = function() {
+            // Show confirmation modal
+            const massSellModal = new bootstrap.Modal(document.getElementById('massSellConfirmationModal'));
+            massSellModal.show();
+        };
+        
+        // Add method to StrategyManager
+        StrategyManager.showMassSellModal = showMassSellModal;
+        
+        // Confirm mass sell button
+        const confirmMassSellBtn = document.getElementById('confirm-mass-sell');
+        if (confirmMassSellBtn) {
+            confirmMassSellBtn.addEventListener('click', function() {
+                // Get slippage and filter settings
+                const slippageBps = document.getElementById('mass-sell-slippage-bps').value;
+                const networkFilter = document.querySelector('input[name="networkFilter"]:checked').value;
+                const excludeMainWallet = document.getElementById('exclude-main-wallet').checked;
+                const onlyWithTokens = document.getElementById('only-with-tokens').checked;
+                const minimumTokenValue = parseFloat(document.getElementById('minimum-token-value').value);
+                
+                // Disable button and show loading state
+                confirmMassSellBtn.disabled = true;
+                confirmMassSellBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> İşleniyor...';
+                
+                // First, need to list all wallets
+                fetch('/api/wallets', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(walletsResponse => {
+                    if (!walletsResponse.success) {
+                        throw new Error(walletsResponse.error || 'Cüzdanlar alınamadı');
+                    }
+                    
+                    let wallets = walletsResponse.data || [];
+                    
+                    // Filter wallets based on network
+                    if (networkFilter !== 'all') {
+                        wallets = wallets.filter(wallet => wallet.network === networkFilter);
+                    }
+                    
+                    // Filter out main pool wallets if requested
+                    if (excludeMainWallet) {
+                        wallets = wallets.filter(wallet => !wallet.is_main_pool);
+                    }
+                    
+                    // If no wallets after filtering, show error
+                    if (wallets.length === 0) {
+                        throw new Error('Filtreleme sonrası cüzdan bulunamadı');
+                    }
+                    
+                    // Extract wallet IDs
+                    const walletIds = wallets.map(wallet => wallet.id);
+                    
+                    // Make API request to sell all tokens
+                    return fetch('/api/wallets/mass-sell-tokens', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            wallet_ids: walletIds,
+                            slippage_bps: parseInt(slippageBps, 10),
+                            minimum_token_value: minimumTokenValue,
+                            only_with_tokens: onlyWithTokens
+                        })
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide modal
+                    bootstrap.Modal.getInstance(document.getElementById('massSellConfirmationModal')).hide();
+                    
+                    if (data.success) {
+                        // Show success message
+                        Toast.success(`Toplu token satışı başlatıldı. ${data.data.processed_wallets} cüzdan işlendi, ${data.data.token_success_count} token başarıyla satıldı.`);
+                    } else {
+                        // Show error message
+                        Toast.error('Toplu token satışı başlatılırken hata oluştu: ' + (data.error || 'Bilinmeyen hata'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting mass sell:', error);
+                    Toast.error('Toplu token satışı başlatılırken hata oluştu: ' + error.message);
+                })
+                .finally(() => {
+                    // Reset button state
+                    confirmMassSellBtn.disabled = false;
+                    confirmMassSellBtn.innerHTML = '<i class="bi bi-currency-exchange"></i> Tokenleri SOL\'a Çevir';
+                });
+            });
+        }
+    });
+</script>
+
+<!-- Mass Sell Confirmation Modal -->
+<div class="modal fade" id="massSellConfirmationModal" tabindex="-1" aria-labelledby="massSellConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="massSellConfirmationModalLabel">
+                    <i class="bi bi-currency-exchange me-2"></i>
+                    Tüm Cüzdanlardaki Tokenleri SOL'a Çevir
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> 
+                    <strong>DİKKAT!</strong> Bu işlem, seçili cüzdanlardaki <strong>tüm tokenleri</strong> SOL'a çevirecektir. Bu işlem geri alınamaz!
+                </div>
+                
+                <div class="mb-3">
+                    <label for="mass-sell-slippage-bps" class="form-label">İzin Verilen Fiyat Kayması (Slippage)</label>
+                    <select class="form-select" id="mass-sell-slippage-bps">
+                        <option value="50">0.5%</option>
+                        <option value="100" selected>1%</option>
+                        <option value="200">2%</option>
+                        <option value="500">5%</option>
+                        <option value="1000">10%</option>
+                    </select>
+                    <small class="text-muted">Daha yüksek değerler, işlemin başarı şansını artırır ancak daha fazla fiyat kayması riski taşır.</small>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">Cüzdan Filtreleri</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ağ Seçimi</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="networkFilter" id="network-all" value="all" checked>
+                                    <label class="form-check-label" for="network-all">
+                                        Tüm Ağlar
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="networkFilter" id="network-mainnet" value="mainnet-beta">
+                                    <label class="form-check-label" for="network-mainnet">
+                                        Sadece Mainnet
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="networkFilter" id="network-devnet" value="devnet">
+                                    <label class="form-check-label" for="network-devnet">
+                                        Sadece Devnet
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Cüzdan Seçimi</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="exclude-main-wallet" checked>
+                                    <label class="form-check-label" for="exclude-main-wallet">
+                                        Ana havuz cüzdanları hariç tut
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="only-with-tokens" checked>
+                                    <label class="form-check-label" for="only-with-tokens">
+                                        Sadece token bakiyesi olan cüzdanları dahil et
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="minimum-token-value" class="form-label">Minimum Token Değeri (SOL)</label>
+                            <input type="number" class="form-control" id="minimum-token-value" value="0.001" min="0" step="0.001">
+                            <div class="form-text">Bu değerin altındaki token bakiyeleri dikkate alınmayacaktır</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i> 
+                    Bu işlem, seçili cüzdanlardaki tokenleri toplu olarak Raydium DEX kullanarak SOL'a çevirecektir. İşlem süresi cüzdan ve token sayısına bağlı olarak değişebilir.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" id="confirm-mass-sell">
+                    <i class="bi bi-currency-exchange"></i> Tokenleri SOL'a Çevir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

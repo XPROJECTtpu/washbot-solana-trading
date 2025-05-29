@@ -1,0 +1,495 @@
+{% extends "layout.html" %}
+
+{% block title %}🚀 Gelişmiş Token Oluşturucu{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- 🔥 YENİ: Yatırımcı Güvenliği Rehberi -->
+    <div class="alert alert-info border-0 shadow-sm mb-4">
+        <h5 class="alert-heading"><i class="bi bi-shield-check me-2"></i>🛡️ Yatırımcı Güvenliği Rehberi</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="mb-0">
+                    <li><strong>Mint Authority:</strong> Token yaratma yetkisini kaldırın</li>
+                    <li><strong>Freeze Authority:</strong> Token dondurma yetkisini devre dışı bırakın</li>
+                    <li><strong>Likidite Kilidi:</strong> LP token'larını en az 6 ay kilitleyin</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="mb-0">
+                    <li><strong>Şeffaflık:</strong> Token detaylarını açık bir şekilde belirtin</li>
+                    <li><strong>Transfer Ücreti:</strong> Makul transfer ücreti belirleyin (%5 max)</li>
+                    <li><strong>Audit:</strong> Token kontratınızı profesyonellere inceletin</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ana Token Creator Formu -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Gelişmiş Token Oluşturucu</h4>
+        </div>
+        <div class="card-body p-4">
+            <form id="tokenCreationForm" class="needs-validation" novalidate>
+                
+                <!-- Wallet Seçimi -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-wallet2 me-2"></i>Wallet Seçimi
+                        </label>
+                        <select class="form-select" id="walletSelect" name="wallet_id" required>
+                            <option value="">Wallet seçin...</option>
+                        </select>
+                        <div class="form-text">Token oluşturacak ve ücretleri ödeyecek wallet'ı seçin</div>
+                    </div>
+                </div>
+
+                <!-- 🎨 TOKEN İKONU YÜKLEME - WALLET SEÇİMİNDEN HEMEN SONRA -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-image me-2"></i>Token İkonu (İsteğe Bağlı)
+                        </label>
+                        <input type="file" class="form-control" id="tokenIcon" name="token_icon" 
+                               accept="image/png,image/jpeg,image/svg+xml">
+                        <div class="form-text">PNG, JPG veya SVG formatında. Maksimum 2MB. Önerilen boyut: 512x512px</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div id="iconPreview" class="mt-4" style="display: none;">
+                            <img id="previewImage" class="img-thumbnail rounded-circle" 
+                                 style="max-width: 80px; max-height: 80px; border: 2px solid #0d6efd;" 
+                                 alt="Token Icon Preview">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temel Token Bilgileri -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Token Adı</label>
+                        <input type="text" class="form-control" id="tokenName" name="token_name" 
+                               placeholder="Örnek: MonacoToken" required minlength="3" maxlength="50">
+                        <div class="invalid-feedback">Token adı 3-50 karakter arası olmalıdır</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Token Sembolü</label>
+                        <input type="text" class="form-control" id="tokenSymbol" name="token_symbol" 
+                               placeholder="Örnek: MCO" required minlength="2" maxlength="10" style="text-transform: uppercase;">
+                        <div class="invalid-feedback">Token sembolü 2-10 karakter arası olmalıdır</div>
+                    </div>
+                </div>
+
+                <!-- Decimals ve Initial Supply -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Decimal Sayısı</label>
+                        <select class="form-select" id="tokenDecimals" name="decimals" required>
+                            <option value="6">6 (Standart)</option>
+                            <option value="9" selected>9 (Önerilen)</option>
+                            <option value="0">0 (NFT için)</option>
+                            <option value="2">2 (Para birimi için)</option>
+                            <option value="18">18 (Ethereum benzeri)</option>
+                        </select>
+                        <div class="form-text">9 decimal çoğu token için önerilen değerdir</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">İlk Arz Miktarı</label>
+                        <input type="number" class="form-control" id="initialSupply" name="initial_supply" 
+                               placeholder="1000000" required min="1" max="1000000000000">
+                        <div class="form-text">Token'ın toplam başlangıç miktarı</div>
+                    </div>
+                </div>
+
+                <!-- Token Açıklaması -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Token Açıklaması</label>
+                        <textarea class="form-control" id="tokenDescription" name="description" 
+                                  rows="3" placeholder="Token'ınızın amacını, kullanım alanlarını ve özelliklerini açıklayın..."></textarea>
+                        <div class="form-text">Yatırımcılar için net ve açık bir açıklama yazın</div>
+                    </div>
+                </div>
+
+                <!-- Creator Bilgileri -->
+                <div class="card border-info mb-4">
+                    <div class="card-header bg-info bg-opacity-10">
+                        <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Creator Bilgileri</h6>
+                        <small class="text-muted">Token yaratıcısının bilgileri (DEX'lerde görünecek)</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Creator Name</label>
+                                <input type="text" class="form-control" id="creatorName" name="creator_name" 
+                                       placeholder="Token yaratıcısının adı">
+                                <div class="form-text">DEX'lerde görünecek yaratıcı adı</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Creator Website</label>
+                                <input type="url" class="form-control" id="creatorWebsite" name="creator_website" 
+                                       placeholder="https://website.com">
+                                <div class="form-text">Yaratıcının resmi web sitesi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🔥 SOLANA AĞININ TÜM TOKEN ÖZELLİKLERİ -->
+                <div class="card border-warning mb-4">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h6 class="mb-0"><i class="bi bi-shield-exclamation me-2"></i>Solana Token Özellikleri</h6>
+                        <small class="text-muted">Token oluştururken yapılacak seçimler</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="mintAuthority" name="mint_authority" checked>
+                                    <label class="form-check-label fw-bold" for="mintAuthority">
+                                        <i class="bi bi-plus-circle me-2"></i>Mint Yetkisi (Yeni token üretimi)
+                                    </label>
+                                    <div class="form-text">Token sahibi olarak yeni token yaratabilme yetkisi. ✅ Kontrol için önerilir.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="freezeAuthority" name="freeze_authority">
+                                    <label class="form-check-label fw-bold" for="freezeAuthority">
+                                        <i class="bi bi-snow me-2"></i>Freeze Yetkisi (Hesap dondurma)
+                                    </label>
+                                    <div class="form-text">Belirli hesapları dondurabilme yetkisi. ⚠️ Yatırımcılar için riskli olabilir.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="transferFeeEnabled" name="transfer_fee_enabled">
+                                    <label class="form-check-label fw-bold" for="transferFeeEnabled">
+                                        <i class="bi bi-percent me-2"></i>Transfer Ücreti
+                                    </label>
+                                    <div class="form-text">Her transfer işleminde alınacak ücret. 💰 Gelir modeli için kullanılabilir.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Ücreti Detayları -->
+                        <div id="transferFeeDetails" class="border rounded p-3 bg-light" style="display: none;">
+                            <h6><i class="bi bi-gear me-2"></i>Transfer Ücreti Ayarları</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Ücret Oranı (%)</label>
+                                    <input type="number" class="form-control" id="transferFeeRate" name="transfer_fee_rate" 
+                                           value="0.5" min="0.01" max="10" step="0.01">
+                                    <div class="form-text">0.01% - 10% arası</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Maksimum Ücret</label>
+                                    <input type="number" class="form-control" id="maxTransferFee" name="max_transfer_fee" 
+                                           value="1000000" min="1" step="1">
+                                    <div class="form-text">Token cinsinden maksimum ücret</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Ücret Alıcı</label>
+                                    <select class="form-select" id="feeRecipient" name="fee_recipient">
+                                        <option value="">Seçilen wallet</option>
+                                    </select>
+                                    <div class="form-text">Ücretlerin gideceği hesap</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gelişmiş Güvenlik Önerileri -->
+                        <div class="alert alert-info mt-3 mb-0">
+                            <small>
+                                <strong>💡 Yatırımcı Güveni İçin Öneriler:</strong><br>
+                                • <strong>Mint Yetkisi:</strong> Token tamamlandığında kaldırın (rug pull koruması)<br>
+                                • <strong>Freeze Yetkisi:</strong> Sadece düzenleyici gereklilik varsa aktif edin<br>
+                                • <strong>Transfer Ücreti:</strong> %1'den düşük tutun, yüksek ücretler kullanıcıları kaçırır
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maliyet Bilgisi -->
+                <div class="alert alert-warning border-0 mb-4">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Maliyet Bilgisi</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Token Oluşturma:</strong> ~0.002 SOL<br>
+                            <strong>Metadata Yükleme:</strong> ~0.001 SOL
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Toplam Tahmini:</strong> ~0.003 SOL<br>
+                            <small class="text-muted">Gerçek maliyet ağ yoğunluğuna göre değişebilir</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Token Oluştur Butonu -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <i class="bi bi-rocket me-2"></i>Token Oluştur
+                        <div class="spinner-border spinner-border-sm ms-2 d-none" id="createTokenSpinner"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sonuç Alanı -->
+    <div id="tokenCreationResult" class="mt-4" style="display: none;"></div>
+</div>
+
+<!-- Token Creator JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Token Creator yükleniyor...');
+    
+    // Wallet'ları yükle
+    loadWalletsForTokenCreator();
+    
+    // Form validation - GÜVENLİ KONTROL
+    const form = document.getElementById('tokenCreationForm');
+    if (form) {
+        form.addEventListener('submit', handleTokenCreation);
+    }
+    
+    // İkon önizleme
+    const iconInput = document.getElementById('tokenIcon');
+    if (iconInput) {
+        iconInput.addEventListener('change', handleIconPreview);
+    }
+    
+    // Creator Metadata checkbox kontrolü - YENİ EKLENEN
+    const enableCreatorInfoCheckbox = document.getElementById('enableCreatorInfo');
+    const creatorInfoFields = document.getElementById('creatorInfoFields');
+    
+    if (enableCreatorInfoCheckbox && creatorInfoFields) {
+        enableCreatorInfoCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                creatorInfoFields.style.display = 'block';
+                // Required attribute'ları ekle
+                document.getElementById('creatorName').setAttribute('required', 'required');
+                document.getElementById('creatorWebsite').setAttribute('required', 'required');
+            } else {
+                creatorInfoFields.style.display = 'none';
+                // Required attribute'ları kaldır
+                document.getElementById('creatorName').removeAttribute('required');
+                document.getElementById('creatorWebsite').removeAttribute('required');
+            }
+        });
+    }
+
+    // Transfer ücreti checkbox kontrolü - GÜVENLİ KONTROLLER
+    const transferFeeEnabledCheckbox = document.getElementById('transferFeeEnabled');
+    const transferFeeDetails = document.getElementById('transferFeeDetails');
+    
+    if (transferFeeEnabledCheckbox && transferFeeDetails) {
+        transferFeeEnabledCheckbox.addEventListener('change', function() {
+            const transferFeeRate = document.getElementById('transferFeeRate');
+            if (this.checked) {
+                transferFeeDetails.style.display = 'block';
+                if (transferFeeRate) transferFeeRate.required = true;
+            } else {
+                transferFeeDetails.style.display = 'none';
+                if (transferFeeRate) transferFeeRate.required = false;
+            }
+        });
+    }
+});
+
+async function loadWalletsForTokenCreator() {
+    try {
+        const response = await fetch('/api/wallets');
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            const walletSelect = document.getElementById('walletSelect');
+            const feeRecipient = document.getElementById('feeRecipient');
+            
+            // Wallet seçimi için güvenli loading
+            if (walletSelect) {
+                // Mevcut seçenekleri temizle (ilk seçenek hariç)
+                while (walletSelect.children.length > 1) {
+                    walletSelect.removeChild(walletSelect.lastChild);
+                }
+                
+                data.data.forEach(wallet => {
+                    const option = document.createElement('option');
+                    option.value = wallet.id;
+                    option.textContent = `${wallet.name} (${wallet.balance.toFixed(3)} SOL)`;
+                    walletSelect.appendChild(option);
+                });
+            }
+            
+            // Fee recipient için güvenli loading
+            if (feeRecipient) {
+                // Mevcut seçenekleri temizle (ilk seçenek hariç)
+                while (feeRecipient.children.length > 1) {
+                    feeRecipient.removeChild(feeRecipient.lastChild);
+                }
+                
+                data.data.forEach(wallet => {
+                    const option = document.createElement('option');
+                    option.value = wallet.id;
+                    option.textContent = `${wallet.name} (${wallet.balance.toFixed(3)} SOL)`;
+                    feeRecipient.appendChild(option);
+                });
+            }
+            
+            console.log(`✅ ${data.data.length} wallet yüklendi`);
+        }
+    } catch (error) {
+        console.error('Wallet yükleme hatası:', error);
+    }
+}
+
+function handleIconPreview(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('iconPreview');
+    const previewImage = document.getElementById('previewImage');
+    
+    if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+            showNotification('Dosya boyutu 2MB\'dan büyük olamaz', 'error');
+            event.target.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+async function handleTokenCreation(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const spinner = document.getElementById('createTokenSpinner');
+    
+    // Butonu devre dışı bırak ve spinner göster
+    submitBtn.disabled = true;
+    spinner.classList.remove('d-none');
+    
+    try {
+        const response = await fetch('/api/create-token', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        displayTokenCreationResult(result);
+        
+    } catch (error) {
+        console.error('Token oluşturma hatası:', error);
+        displayTokenCreationResult({
+            success: false,
+            message: 'Token oluşturma sırasında bir hata oluştu',
+            error: error.message
+        });
+    } finally {
+        // Butonu tekrar etkinleştir ve spinner gizle
+        submitBtn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+}
+
+function displayTokenCreationResult(result) {
+    const resultDiv = document.getElementById('tokenCreationResult');
+    
+    if (result.success) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-success border-0 shadow-sm">
+                <h5 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Token Başarıyla Oluşturuldu!</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Token Adresi:</strong><br>
+                        <code class="user-select-all">${result.token_address || 'Adres alınıyor...'}</code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>İşlem ID:</strong><br>
+                        <code class="user-select-all">${result.transaction_id || 'İşlem ID alınıyor...'}</code>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/tokens" class="btn btn-primary">Token Listesini Görüntüle</a>
+                    <button class="btn btn-outline-primary" onclick="copyToClipboard('${result.token_address}')">
+                        Adresi Kopyala
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger border-0 shadow-sm">
+                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Token Oluşturulamadı</h5>
+                <p class="mb-0">${result.message || 'Bilinmeyen bir hata oluştu'}</p>
+                ${result.error ? `<pre class="mt-2 text-muted"><small>${result.error}</small></pre>` : ''}
+            </div>
+        `;
+    }
+    
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Toast göster
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 1100;';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">Adres kopyalandı!</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+    });
+}
+
+// Creator Metadata dinamik kontrolü
+document.addEventListener('DOMContentLoaded', function() {
+    // Creator info checkbox kontrolü
+    const enableCreatorInfo = document.getElementById('enableCreatorInfo');
+    const creatorInfoFields = document.getElementById('creatorInfoFields');
+    
+    if (enableCreatorInfo && creatorInfoFields) {
+        enableCreatorInfo.addEventListener('change', function() {
+            if (this.checked) {
+                creatorInfoFields.style.display = 'block';
+                // Required alanları aktif et
+                document.getElementById('creatorName').setAttribute('required', 'required');
+                document.getElementById('creatorWebsite').setAttribute('required', 'required');
+            } else {
+                creatorInfoFields.style.display = 'none';
+                // Required alanları pasif et
+                document.getElementById('creatorName').removeAttribute('required');
+                document.getElementById('creatorWebsite').removeAttribute('required');
+            }
+        });
+    }
+    
+    // Enhanced token creator entegrasyonu
+    if (typeof enhancedTokenCreator !== 'undefined') {
+        console.log('✅ Enhanced Token Creator integration successful');
+    }
+});
+</script>
+
+<!-- Enhanced Token Creator Script -->
+<script src="/static/js/enhanced-token-creator.js"></script>
+
+{% endblock %}
