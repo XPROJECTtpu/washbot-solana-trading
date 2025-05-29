@@ -1,0 +1,35 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/token-providers": "^3.817.0",
+    "@chainlink/ccip-js": "^0.2.3",
+    "@fractalwagmi/solana-wallet-adapter": "^0.1.1",
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@nebula.js/sn-bar-chart": "^1.39.1",
+    "@nebula.js/sn-line-chart": "^1.45.1",
+    "@raydium-io/raydium-sdk-v2": "^0.1.138-alpha",
+    "@solana/errors": "^2.1.1",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/spl-token-metadata": "^0.1.6",
+    "@solana/spl-token-registry": "^0.2.4574",
+    "@solana/transaction-confirmation": "^2.1.1",
+    "@solana/web3.js": "^1.98.2",
+    "@turnkey/solana": "^1.0.25",
+    "crypto-browserify": "^3.12.1",
+    "csrf": "^3.1.0",
+    "d3-org-chart": "^3.1.1",
+    "minimalistic-crypto-utils": "^1.0.1"
+  }
+}
